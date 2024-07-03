@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="css/index.css" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <h2>Anime</h2>
+        <div class="navbar">
+            <a href="index.html" style="width: 45%;">My Lists</a>
+            <a href='search.html' style="width: 45%;">Search</a>
+            <a href='login.html' style="width: 10%; font-family: math">⚪&#xFE0E;</a>
+        </div>
+    </div>
+    <div class="search">
+        <input type="text" id="myInput" placeholder="Search for anime on current page" title="Type in a name">
+    </div>
+    <div class="container content" id="content"></div>
+    <div class="navbar bottom">
+        <a href="javascript:void(0)" style="width: 12.5%;">Mon</a>
+        <a href="javascript:void(0)" style="width: 12.5%;">Tue</a>
+        <a href="javascript:void(0)" style="width: 12.5%;">Wed</a>
+        <a href="javascript:void(0)" style="width: 12.5%;">Thu</a>
+        <a href="javascript:void(0)" style="width: 12.5%;">Fri</a>
+        <a href="javascript:void(0)" style="width: 12.5%;">Sat</a>
+        <a href="javascript:void(0)" style="width: 12.5%;">Sun</a>
+        <a href="javascript:void(0)" style="width: 12.5%;">???</a>
+    </div>
+    <div class="dropup">
+        <button class="dropupbtn">Season</button>
+        <div class="dropup-content">
+          <a href="javascript:void(0)">WINTER</a>
+          <a href="javascript:void(0)">SPRING</a>
+          <a href="javascript:void(0)">SUMMER</a>
+          <a href="javascript:void(0)">FALL</a>
+        </div>
+    </div>
+    <div class="modal" id="myModal">
+        <div class="modal-content" style="height: auto; overflow: auto;">
+            <div class="container modal-header" style="height: fit-content; width: 100%">
+                <span class="close">&#215</span>
+                <div class="image-container"></div>
+                <div class="title-container"  style="padding: 0.25rem;"></div>
+                <div class="genres" style="padding: 0.25rem; font-size: 10px;"></div>
+                <div id="dropdown" class="dropdown">
+                  <button class="dropbtn">POG</button>
+                  <div id="MyDropdown" class="dropdown-content">
+                    <a>CURRENT</a>
+                    <a>PLANNING</a>
+                    <a>COMPLETED</a>
+                    <a>PAUSED</a>
+                    <a>DROPPED</a>
+                  </div>
+                </div>
+            </div>
+            <div class="container modal-body">
+            </div>
+        </div>
+    </div>
+    
+    <script id ="myscript" src="js/calendar.js" defer></script>
+    <script src="https://unpkg.com/pulltorefreshjs"></script>
+    <script>
+    const ptr = PullToRefresh.init({
+        mainElement: 'body',
+        onRefresh() {
+          window.location.reload();
+        }
+      });
+    </script>
+   
+</body>
+</html>
