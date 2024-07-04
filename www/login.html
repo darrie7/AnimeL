@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link href="css/index.css" rel="stylesheet">
+</head>
+<body>
+    <div class="header">
+        <h2>Anime</h2>
+        <div class="navbar">
+            <a href="index.html" style="width: 33%;">My Lists</a>
+            <a href="calenderpage.html" style="width: 33%;">Seasonal</a>
+            <a href='search.html' style="width: 33%;">Search</a>
+        </div>
+    </div>
+    <div class="container content" id="content">
+        <div>
+            <button id="urlbutton" type="button">Login with AniList</button>
+        </div>
+        <table class="active">
+            <tr>
+                <td> Primary colour </td>
+                <td>
+                    <input type="color" id="primarycolourPicker">
+                </td>
+            </tr>
+            <tr>
+                <td> Secondary colour </td>
+                <td>
+                    <input type="color" id="secondarycolourPicker">
+                </td>
+            </tr>
+            <tr>
+                <td> Third colour </td>
+                <td>
+                    <input type="color" id="tripondarycolourPicker">
+                </td>
+            </tr>
+        </table>
+    </div>
+    <script id ="myscript" src="js/login.js" defer></script>
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+</body>
+</html>

@@ -1,0 +1,363 @@
+* {box-sizing: border-box}
+
+/* Set height of body and the document to 100% */
+body, html {
+  
+  margin: 0;
+  font-family: Arial;
+}
+
+body, html {
+  /* height: 100%; */
+  margin: 0;
+  font-size: 14px;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.container {
+  padding: 16px;
+}
+
+.img {
+  max-width: 16vw;
+}
+
+td img {
+  max-height: 15vh;
+  max-width: 12.5vw;
+  padding: 3px;
+}
+
+
+.header {
+  /* background-color: #303F9F; */
+  padding: 5px 30px;
+  text-align: center;
+  color: white;
+}
+
+.header h2 {
+  padding: 0px;
+  margin: 10px
+}
+
+.navbar {
+  /* background-color:#303F9F; */
+  overflow: hidden;
+  width: 100%;
+}
+.bottom {
+  position: fixed;
+  bottom: 0;
+}
+
+.navbar a {
+  float: left;
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 10px 0px;
+  text-decoration: none;
+  font-size: 17px;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+}
+
+.navbar a:hover {
+  background-color: #ddd;
+  color: black;
+}
+
+.navbar a.active {
+  /* background-color: #3F51B5; */
+  color: white;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.content {
+  margin-bottom: 40px;
+}
+
+.content table {
+  display: none;
+  width: 100%;
+  background-color: white;
+}
+
+.content table.active {
+  display: block;
+  width: 100%;
+}
+
+tr {
+  border: solid;
+  border-width: 1px 0;
+  border-color: #BDBDBD;;
+}
+
+tr:first-child {
+  border-top: none;
+  overflow: hidden;
+}
+
+tr:last-child {
+  border-bottom: none;
+}
+
+p.item_title {
+  font-size: 12.5px;
+  margin: 3px 0px;
+  font-weight: bold;
+}
+
+p.item_subtitle {
+  font-size: 12px;
+  margin: 5px 0px;
+  color: #757575;
+}
+
+td {
+  cursor: pointer;
+}
+
+td.clickable-item {
+  width: 100%;
+}
+
+td.update1 {
+  cursor: pointer;
+  padding: 0px 20px;
+  font-size: 20px;
+}
+
+a.dropbtn{
+  padding-bottom: 11px;
+  font-size: 16px;
+}
+.dropbtn {
+  /* background-color: #3F51B5; */
+  color: white;
+  padding: 8px;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  position:relative;
+  border-radius: 2px;
+  width: 100%
+}
+
+/* .dropbtn:hover, .dropbtn:focus {
+  background-color: #2980B9;
+} */
+
+.dropupbtn {
+  /* background-color: #303F9F; */
+  color: white;
+  padding: 16px;
+  font-size: 16px;
+  border: none;
+  border-radius: 200px;
+}
+
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  overflow: auto;
+  box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+.dropdown-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropdown a:hover {background-color: #ddd;}
+
+.dropup {
+  position: fixed;
+  display: inline-block;
+  bottom: 50px;
+  right: 16px;
+}
+
+.dropup-content {
+  display: none;
+  position: absolute;
+  background-color: #f1f1f1;
+  min-width: 160px;
+  bottom: 50px;
+  right: 16px;
+  z-index: 1;
+}
+
+.dropup-content a {
+  color: black;
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
+
+.dropup-content a:hover {background-color: #ddd}
+
+.dropup-content label {
+	display: block;
+	padding: 4px 4px;
+	cursor: pointer;
+}
+
+.dropup-content input[type="radio"] {
+	margin-right: 10px;
+}
+
+.dropup-content input[type="radio"]:checked + span {
+	font-weight: bold;
+	color: #0000ff; /* Blue color for selected item */
+}
+
+
+
+.show {display: block;}
+
+/* The Modal (background) */
+.modal {
+  display: none; /* Hidden by default */
+  position: fixed; /* Stay in place */
+  z-index: 1; /* Sit on top */
+  padding-top: 100px; /* Location of the box */
+  left: 0;
+  top: 0;
+  width: 100%; /* Full width */
+  height: 100%; /* Full height */
+  overflow: auto; /* Enable scroll if needed */
+  background-color: rgb(0,0,0); /* Fallback color */
+  background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
+  border: 1px solid #888;
+  width: 80%;
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2),0 6px 20px 0 rgba(0,0,0,0.19);
+  -webkit-animation-name: animatetop;
+  -webkit-animation-duration: 0.4s;
+  animation-name: animatetop;
+  animation-duration: 0.4s
+}
+
+.modal-body h3 {
+  margin: 0px;
+}
+
+.modal-body p {
+  margin: 0px;
+}
+
+/* Add Animation */
+@-webkit-keyframes animatetop {
+  from {top:-300px; opacity:0} 
+  to {top:0; opacity:1}
+}
+
+@keyframes animatetop {
+  from {top:-300px; opacity:0}
+  to {top:0; opacity:1}
+}
+
+/* The Close Button */
+.close {
+  color: white;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.close:hover,
+.close:focus {
+  color: #000;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.modal-header {
+  /* background-color: #303F9F; */
+  color: white;
+  display: inline-block;
+}
+
+
+#myInput,#search_anime, #numb {
+  width: 100%;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+}
+
+
+#search_anime_button, #submitbutton, #urlbutton {
+  /* background-color: #3F51B5; */
+  color: white;
+  padding: 8px 8px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 20px;
+  margin-top: 3px;
+}
+
+.title-container {
+  font-size: medium;
+  font-weight: bold;
+}
+
+.form {
+  margin: auto auto;
+  font-family: 'Arial', sans-serif;
+  display: flex;
+  flex-direction: column; /* Set to 'row' if you want inputs side by side */
+  align-items: center; /* Adjust alignment as needed */
+}
+
+
+.formbutton {
+  /* background-color: #3F51B5; */
+  color: white;
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  width: 100%;
+  font-size: 20px;
+}
+
+.formtext {
+  width: 100%;
+  padding: 5px;
+  margin: 4px 0;
+  box-sizing: border-box;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 14px;
+  color: #333;
+}
