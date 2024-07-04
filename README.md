@@ -1,7 +1,7 @@
-# My Application
+# AnimeL
 
 ## Overview
-Anime tracker using Anilist API built with Cordova. Pure Javascript/CSS/HTML, so can just run in any browser. Code is not pretty
+Anime tracker using Anilist API built with Cordova. Code is not pretty
 
 ## Stand Out Features
 - Sort based on when next episode is released, so the upcoming releasing anime episodes are up top
@@ -22,14 +22,19 @@ Anime tracker using Anilist API built with Cordova. Pure Javascript/CSS/HTML, so
     ```
 
 2. **Open the application:**
-    - Download all files.
-    - Simply open the `index.html` file in your preferred web browser.
+    - Download all files and build with Cordova
   
 3. **Download apk from Releases:**
 
 ## Usage
 
-### Navigation Bar
+### Top Navigation Bar
+The navigation bar at the top of the page includes buttons for different task statuses:
+- **Seasonal**: Displays anime for current and upcoming seasons split by day of the week.
+- **Search**: Search Anilist for anime.
+- **O**: Theming and login page.
+
+### Bottom Navigation Bar
 The navigation bar at the bottom of the page includes buttons for different task statuses:
 - **Current**: Displays anime in currently watching list.
 - **Planning**: Displays anime in plan to watch  list.
