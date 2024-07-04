@@ -47,7 +47,7 @@ async function main() {
     }
     mydropups[0].textContent = theseason
     await dayactive()
-    if (!localStorage[theseason] || localStorage[`LastUpdated_${theseason}`]+1800000 < Date.now()) {
+    if (!localStorage[theseason] || parseInt(localStorage[`LastUpdated_${theseason}`])+1800000 < Date.now()) {
         await pagefill(theseason, (new Date()).getFullYear())
     }
     table.replaceChildren()

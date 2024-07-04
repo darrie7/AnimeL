@@ -48,7 +48,7 @@ async function main() {
         await getviewerid()
     } 
     viewerId = localStorage.viewerId
-    if (!localStorage.getItem(`anime_current`) || localStorage.getItem('LastUpdated')+1800000 < Date.now()) {
+    if (!localStorage.getItem(`anime_current`) || parseInt(localStorage.getItem('LastUpdated'))+1800000 < Date.now()) {
         await fillpage()
     }
     table.replaceChildren()
