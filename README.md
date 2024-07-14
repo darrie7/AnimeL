@@ -12,6 +12,10 @@ Anime tracker using Anilist API built with Cordova. Code is not pretty
 ## Demo
 ![image](https://github.com/darrie7/AnimeL/assets/9318490/cee39c28-0021-432d-9167-4187a4d81fa7)
 
+## Requirements
+
+- Cordova (>=12?)
+- Cordova InAppBrowser Plugin
 
 ## Installation
 
