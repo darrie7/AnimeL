@@ -10,18 +10,25 @@ if (!localStorage.seccolour) {
 } else {
     seccolour = localStorage.seccolour
 }
-document.querySelector(".header").style.setProperty("background-color", primcolour)
-document.querySelector(".navbar").style.setProperty("background-color", primcolour)
-document.querySelector(".dropbtn").style.setProperty("background-color", seccolour)
-document.querySelector(".modal-header").style.setProperty("background-color", primcolour)
-document.querySelector("#search_anime_button").style.setProperty("background-color", primcolour)
-document.querySelector(".formbutton").style.setProperty("background-color", seccolour)
+
+async function setPrimaryColour(){
+    document.querySelectorAll(".primary").forEach(element => {
+        element.style.setProperty("background-color", primcolour)
+    })
+}
+
+async function setSecondaryColour(){
+    document.querySelectorAll(".secondary").forEach(element => {
+        element.style.setProperty("background-color", seccolour)
+    })
+}
 
 let token;
 const modal = document.getElementsByClassName("modal")[0];
-const pagecontent = document.getElementById("content");
-const span = document.getElementsByClassName("close")[0];
 let searchbutton = document.getElementById("search_anime_button")
+const table = document.querySelector("table");
+
+const url = 'https://graphql.anilist.co';
 
 async function main() {
     if (!localStorage.anitoken) {
@@ -30,51 +37,57 @@ async function main() {
     } else {
         token = localStorage.anitoken
     }
+    setPrimaryColour()
+    setSecondaryColour()
     searchbutton.addEventListener('click', async function() {
         const searchestring = document.getElementById("search_anime").value;
         pagefill(searchestring)
     })
     toggledrop(document.getElementsByClassName("dropbtn")[0])
-    spanclose()
 }
 main()
 
-async function spanclose() {
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-}
 
 async function pagefill(searchstring) {
-    let query = `
-    query ($search: String){ # Define which variables will be used in the query (id)
-        Page (page: 1, perPage:50) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
-            media (search: $search, type: ANIME) {
-                description,
-                title {
-                    romaji
-                },
-                id,
-                nextAiringEpisode {
-                    timeUntilAiring,
-                    episode
-                },
-                coverImage {
-                    medium
-                },
-                mediaListEntry {
-                    status
+    let data = []
+    let lastpage = 100
+    let currentpage = 1
+    while (lastpage >= currentpage) {
+        let query = `
+        query ($search: String){ # Define which variables will be used in the query (id)
+            Page (page: 1, perPage:50) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
+                pageInfo {
+                    lastPage
+                }
+                media (search: $search, type: ANIME) {
+                    description,
+                    episodes,
+                    title {
+                        romaji
+                    },
+                    id,
+                    nextAiringEpisode {
+                        timeUntilAiring,
+                        episode
+                    },
+                    coverImage {
+                        medium
+                    },
+                    mediaListEntry {
+                        status,
+                        progress,
+                        notes
+                    }
                 }
             }
         }
-    }
-    `;
+        `;
 
-    let variables = {
-        search: searchstring,
-    }
+        let variables = {
+            search: searchstring,
+        }
 
-    const url = 'https://graphql.anilist.co',
+        const url = 'https://graphql.anilist.co',
         options = {
             method: 'POST',
             headers: {
@@ -88,9 +101,14 @@ async function pagefill(searchstring) {
             })
         };
 
-    await fetch(url, options).then(handleResponse)
-                    .then(handleData)
-                    .catch(handleError);
+        fetched = await fetch(url, options).catch(handleError);
+        fetchedjson = await fetched.json()
+        data.push(fetchedjson)
+        currentpage += 1
+        lastpage = fetchedjson['data']['Page']['pageInfo']['lastPage']
+    }
+    table.replaceChildren()
+    handleData(data)
 }
 
 async function handleResponse(response) {
@@ -106,45 +124,51 @@ async function handleError(error) {
 }
 
 async function handleData(data){
-    pagecontent.replaceChildren()
-    let contenttable = document.createElement("table");
-    contenttable.className = "active";
-    for (i = 0; i < data['data']['Page']['media'].length; i++) {
-        let myitem = document.createElement("tr");
-        myitem.className = "list_item";
-        myitem.appendChild(document.createElement("td"))
-        myitem.appendChild(document.createElement("td"))
-        myitem.appendChild(document.createElement("td"))
-        //data
-        myitem.dataset.id = data['data']['Page']['media'][i]['id']
-        //item text elements
-        let tablezero = myitem.children[0]
-        let imagetable = document.createElement("img");
-        imagetable.src = data['data']['Page']['media'][i]['coverImage']['medium'];
-        imagetable.loading = (i < 10 ? "eager" : "lazy")
-        tablezero.appendChild(imagetable)
-        let tableelone = myitem.children[1]
-        tableelone.className = "clickable-item"
-        tableelone.addEventListener('click', async function() {
-            clickables(this)
+    let searchitems = []
+    let fragment = document.createDocumentFragment()
+    data.forEach(list => {
+        let listentry = list['data']['Page']['media']
+        listentry.forEach(entry => {
+            searchitems.push(entry)
+            let myitem = document.createElement("tr");
+            myitem.className = "list_item";
+            myitem.dataset.id = entry['id']
+
+            let tablezero = document.createElement("td");
+            let imagetable = document.createElement("img");
+            imagetable.src = entry['coverImage']['medium'];
+            imagetable.loading = "lazy"
+            tablezero.appendChild(imagetable)
+
+
+            let tableelone = document.createElement("td");
+            tableelone.className = "clickable-item"
+            tableelone.addEventListener('click', async function() {
+                clickables(this)
+            })
+
+            //title
+            let myitemtitle = document.createElement("p")
+            myitemtitle.className = "item_title"
+            myitemtitle.textContent = (entry['mediaListEntry'] ? `\uD83D\uDC41\uFE0F${entry['title']['romaji']}` : entry['title']['romaji'])
+            
+            //subtitle
+            let myitemsubtitle = document.createElement("p")
+            myitemsubtitle.className = "item_subtitle";
+            myitemsubtitle.innerHTML = entry['description']
+            if (myitemsubtitle.textContent != myitemsubtitle.textContent.substring(0, 200)) {
+                myitemsubtitle.textContent = `${myitemsubtitle.textContent.substring(0, 200)}...`
+            }
+
+            tableelone.appendChild(myitemtitle)
+            tableelone.appendChild(myitemsubtitle)
+            myitem.appendChild(tablezero)
+            myitem.appendChild(tableelone)
+            fragment.appendChild(myitem)
         })
-        tableelone.appendChild(document.createElement("p"))
-        tableelone.appendChild(document.createElement("p"))
-        tableelone.appendChild(document.createElement("p"))
-        //title
-        let myitemtitle = tableelone.children[0];
-        myitemtitle.className = "item_title"
-        myitemtitle.textContent = (data['data']['Page']['media'][i]['mediaListEntry'] ? `\uD83D\uDC41\uFE0F${data['data']['Page']['media'][i]['title']['romaji']}` : data['data']['Page']['media'][i]['title']['romaji'])
-        //subtitle
-        let myitemsubtitle = tableelone.children[1];
-        myitemsubtitle.className = "item_subtitle";
-        myitemsubtitle.innerHTML = data['data']['Page']['media'][i]['description'];
-        if (myitemsubtitle.textContent != myitemsubtitle.textContent.substring(0, 200)) {
-            myitemsubtitle.textContent = `${myitemsubtitle.textContent.substring(0, 200)}...`
-        }
-        contenttable.appendChild(myitem);
-    }
-    pagecontent.appendChild(contenttable)
+    })
+    table.appendChild(fragment)
+    localStorage.setItem('searchitems', JSON.stringify(searchitems))
 }
 
 
@@ -208,62 +232,44 @@ async function createmodal(data) {
     modalgenres.textContent = `${data['data']['Media']['genres']}`.split(',').join(', ');
     let modalbutton = document.getElementsByClassName("dropdown")[0];
     modalbutton.dataset.aniid = data['data']['Media']['id'];
-    modalbutton.children[0].textContent =(data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['status'] : "ADD")
-    let notesform = document.getElementById('notesform')
-    notesform.children[0].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['notes'] : "")
-    notesform.children[1].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['progress']: 0)
-    notesform.children[2].onclick = async function() {updatenotes(this)}
+    modal.querySelector('.dropbtn').textContent =(data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['status'] : "ADD")
+    let notesform = document.querySelectorAll('#notesform .formtext')
+    notesform[0].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['notes'] : "")
+    notesform[1].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['progress']: 0)
+    let savebutton = document.getElementById('formbutton')
+    savebutton.onclick = async function() {updatenotes(this)}
     let modal_body = document.getElementsByClassName("modal-body")[0];
-    modal_body.innerHTML = `<h3>Description</h3><p>${data['data']['Media']['description']}</p>`;
+    modal_body.children[0].innerHTML = `<h3>Description</h3><p>${data['data']['Media']['description']}</p>`;
     modal.style.display = 'block';
 }
 
-
-async function adddropdown() {
-    let dropdownbutts = document.getElementsByClassName("dropdown-content")[0];
-    Array.from(dropdownbutts.children).forEach(el => {
-        el.addEventListener('click', async function() {
-            updatestatus(this)
-        })
-    });
-}
-
-
-async function updatestatus(element) {
-    element.parentNode.parentNode.children[0].textContent = element.textContent
-    let query;
-    let variables;
-    if (element.textContent == "DELETE") {
-        query = `
-        mutation ($mediaId: Int) { 
-            DeleteListEntry(mediaId: $mediaId) {
-                deleted
-          }
-        }
-        `;
-    
-        variables = {
-            mediaId: parseInt(element.parentNode.parentNode.dataset.aniid),
-    
-        };
+async function updatenotes(element) {
+    let tableentry = document.querySelector((`[data-id='${element.parentNode.dataset.aniid}']`))
+    let notesform = document.querySelectorAll('#notesform .formtext')
+    tableentry.dataset.progress = parseInt(notesform[1].value)
+    tableentry.querySelector('.item_title').textContent = `\uD83D\uDC41\uFE0F${tableentry.querySelector('.item_title').textContent}`
+    if ((parseInt(tableentry.dataset.next_ep_nr)-parseInt(tableentry.dataset.progress)) > 1) {
+        tableentry.style.backgroundColor = tricolour
     } else {
-        query = `
-        mutation ($status: MediaListStatus, $mediaId: Int) { 
-        anime000: SaveMediaListEntry (mediaId: $mediaId, status: $status) {
-                id 
-        }
-        }
-        `;
-
-        variables = {
-            mediaId: parseInt(element.parentNode.parentNode.dataset.aniid),
-            status: element.textContent,
-
-        };
+        tableentry.style.backgroundColor = "#FFFFFF"
     }
+    let query = `
+    mutation ($notes: String, $mediaId: Int, $progress: Int, $status: MediaListStatus) { 
+      anime000: SaveMediaListEntry (mediaId: $mediaId, notes: $notes, progress: $progress, status: $status) {
+            id 
+      }
+    }
+    `;
 
-    const url = 'https://graphql.anilist.co';
-    let  options = {
+    let variables = {
+        mediaId: parseInt(element.parentNode.dataset.aniid),
+        notes: notesform[0].value,
+        progress: parseInt(notesform[1].value),
+        status: document.getElementsByClassName("dropbtn")[0].textContent
+
+    };
+
+    let options = {
         method: 'POST',
         headers: {
             'Authorization': 'Bearer ' + token,
@@ -275,8 +281,47 @@ async function updatestatus(element) {
             variables: variables
         })
     };
-    await fetch(url, options).then(handleResponse)
+    showToast(`${tableentry.querySelector('.item_title').textContent} status updated`)
+
+    let searchitems = JSON.parse(localStorage['searchitems'])
+    updatedItem = searchitems.find(item => item['id'] == element.parentNode.dataset.aniid)
+
+    if (!updatedItem['mediaListEntry']) {
+        updatedItem['mediaListEntry'] = {}
+    }
+    updatedItem['mediaListEntry']['status'] = document.getElementsByClassName("dropbtn")[0].textContent.toLowerCase()
+    updatedItem['mediaListEntry']['progress'] = updatedItem['mediaListEntry']['progress'] ? updatedItem['mediaListEntry']['progress'] : 0
+    updatedItem['mediaListEntry']['updatedAt'] = updatedItem['mediaListEntry']['updatedAt'] ? updatedItem['mediaListEntry']['updatedAt'] : Date.now()
+    updatedItem['mediaListEntry']['createdAt'] = updatedItem['mediaListEntry']['createdAt'] ? updatedItem['mediaListEntry']['createdAt'] : Date.now()
+    if (!updatedItem['mediaListEntry']['startedAt']) {
+        updatedItem['mediaListEntry']['startedAt'] = {}
+    }
+    updatedItem['mediaListEntry']['startedAt']['year'] = updatedItem['mediaListEntry']['startedAt']['year'] ? updatedItem['mediaListEntry']['startedAt']['year'] : (new Date()).getFullYear
+    updatedItem['mediaListEntry']['startedAt']['month'] = updatedItem['mediaListEntry']['startedAt']['month'] ? updatedItem['mediaListEntry']['startedAt']['month'] : (new Date()).getMonth + 1
+    updatedItem['mediaListEntry']['startedAt']['day'] = updatedItem['mediaListEntry']['startedAt']['day'] ? updatedItem['mediaListEntry']['startedAt']['day'] : (new Date()).getDate
+
+    let tempItem = {'media': null}
+    tempItem['media'] = updatedItem
+
+    let updatelist = JSON.parse(localStorage[`anime_${document.getElementsByClassName("dropbtn")[0].textContent.toLowerCase()}`])
+    updatelist.push(tempItem)
+    localStorage[`anime_${document.getElementsByClassName("dropbtn")[0].textContent.toLowerCase()}`] = JSON.stringify(updatelist)
+
+    fetch(url, options).then(handleResponse)
                        .catch(handleError);
+}
+
+async function adddropdown() {
+    let dropdownbutts = document.getElementsByClassName("dropdown-content")[0];
+    let statusbutton = document.getElementsByClassName("dropbtn")[0];
+    Array.from(dropdownbutts.children).forEach(el => {
+        el.addEventListener('click', async function() {
+            statusbutton.textContent = this.textContent
+            if (dropdownbutts.classList.contains('show')) {
+                dropdownbutts.classList.remove('show')
+            }
+        })
+    });
 }
 
 async function toggledrop(element){
@@ -289,19 +334,29 @@ async function toggledropdown(element) {
     element.parentNode.children[1].classList.toggle("show");
 }
 
+async function showToast(message) {
+    const toast = document.querySelector('.toast');
+    toast.style.backgroundColor = seccolour
+    toast.textContent = message;
+    toast.style.display = 'block'
+
+    setTimeout(() => {
+        toast.style.display = 'none'
+    }, 2000);
+}
+
 // When the user clicks anywhere outside of the modal, close it
 window.onclick = function(event) {
     if (event.target == modal) {
         modal.style.display = "none";
     }
-    if (!event.target.matches('.dropbtn')) {
-        let dropdowns = document.getElementsByClassName("dropdown-content");
-        let i;
-        for (i = 0; i < dropdowns.length; i++) {
-            let openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-            }
+}
+window.ontouchstart = async function(event) {
+    if (!event.target.matches('.dropdown-content a') && !event.target.matches('.dropbtn')) {
+        // document.getElementById("MyDropdown").classList.toggle("show");
+        let dropdowns = document.getElementsByClassName("dropdown-content")[0];
+        if (dropdowns.classList.contains('show')) {
+            dropdowns.classList.remove('show')
         }
     }
 }

@@ -3,30 +3,32 @@
 <head>
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <link href="css/index.css" rel="stylesheet">
+<link rel="shortcut icon" href="#" />
 </head>
 <body>
-    <div class="header">
-      <h2>Anime</h2>
-      <div class="navbar">
-        <a href="calenderpage.html" style="width: 45%;">Seasonal</a>
-        <a href='search.html' style="width: 45%;">Search</a>
-        <a href='login.html' style="width: 10%; font-family: math">⚪&#xFE0E;</a>
-      </div>
+    <div class="header primary">
+      <h2>Lists</h2>
     </div>
     <div class="search">
-      <input type="text" id="myInput" placeholder="Search for anime on current page" title="Type in a name">
+      <input class="searchbar" type="text" id="myInput" placeholder="Search for anime on current page" title="Type in a name">
     </div>
     <div class="container content" id="content">
       <table id="current" class="active" data-sort="Next release asc"></table>
     </div>
-    <div class="navbar bottom">
-        <a href="javascript:void(0)" class="active" style="width: 25%;">Current</a>
-        <a href="javascript:void(0)" style="width: 25%;">Planning</a>
-        <a href="javascript:void(0)" style="width: 25%;">Paused</a>
-        <a href="javascript:void(0)" style="width: 25%;">Completed</a>
+    <div class="pill ">
+        <button href="javascript:void(0)" class="secondary" style="width: 20%;">Current</button>
+        <button href="javascript:void(0)" class="secondary" style="width: 20%;">Planning</button>
+        <button href="javascript:void(0)" class="secondary" style="width: 20%;">Paused</button>
+        <button href="javascript:void(0)" class="secondary" style="width: 20%;">Completed</button>
+    </div>
+    <div class="navbar primary">
+      <a href="javascript:void(0)" style="width: 25%;"><img border="0" src="img/list.svg"></a>
+      <a href="calenderpage.html" style="width: 25%;"><img border="0" src="img/calendat.svg"></a>
+      <a href='search.html' style="width: 25%;"><img border="0"  src="img/search.svg"></a>
+      <a href='login.html' style="width: 25%"><img border="0" src="img/settings.svg"></a>
     </div>
     <div class="dropup">
-      <button class="dropupbtn">Sort</button>
+      <button class="dropupbtn primary">Sort</button>
       <div class="dropup-content">
         <label>
             <input type="radio" value="Next release asc">
@@ -76,31 +78,34 @@
     </div>
     <div class="modal" id="myModal">
         <div class="modal-content" style="height: auto; overflow: auto;">
-            <div class="container modal-header" style="height: fit-content; width: 100%">
-                <span class="close">&#215</span>
-                <div class="image-container"></div>
-                <div id="dropdown" class="dropdown">
-                  <button class="dropbtn">POG</button>
-                  <div id="MyDropdown" class="dropdown-content">
-                    <a>CURRENT</a>
-                    <a>PLANNING</a>
-                    <a>COMPLETED</a>
-                    <a>PAUSED</a>
-                    <a>DROPPED</a>
-                  </div>
+            <div class="container modal-header primary" style="height: fit-content; width: 100%">
+              <div class="title-container" style="padding: 0.25rem;"></div>
+              <div class="genres" style="padding: 0.25rem; font-size: 12px;"></div>
+              <div class="image-container"></div>
+              <div id="dropdown" class="dropdown">
+                <button type="button" class="dropbtn secondary">POG</button>
+                <div class="dropdown-content">
+                  <a>CURRENT</a>
+                  <a>PLANNING</a>
+                  <a>COMPLETED</a>
+                  <a>PAUSED</a>
+                  <a>DROPPED</a>
                 </div>
-                <form id="notesform" class="form">
-                  <input class="formtext" type="text" placeholder="Notes" name="notes">
-                  <input class="formtext" type="number" placeholder="Progress" name="integerInput">
-                  <input class="formbutton" type="button" value="Update">
-                </form>
-                <div class="title-container" style="padding: 0.25rem;"></div>
-                <div class="genres" style="padding: 0.25rem; font-size: 12px;"></div>
+                <button class="secondary" id="formbutton" value="Save">Save</button>
+              </div>
+              <form id="notesform" class="form">
+                <label for="input-box" class="input-header">Notes</label>
+                <input class="formtext" type="text" placeholder="Notes" name="notes">
+                <label for="input-box" class="input-header">Progress</label>
+                <input class="formtext" type="number" placeholder="Progress" name="integerInput">
+              </form>
             </div>
             <div class="container modal-body">
-          </div>
+              <div></div>
+            </div>
         </div>
     </div>
+    <div class="toast"></div>
     <script id ="myscript" src="js/index.js" defer></script>
     <script src="https://unpkg.com/pulltorefreshjs"></script>
 </body>

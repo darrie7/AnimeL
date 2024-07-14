@@ -17,21 +17,24 @@ if (!localStorage.tricolour) {
 } else {
     tricolour = localStorage.tricolour
 }
-document.querySelector(".header").style.setProperty("background-color", primcolour)
-for (let i=0; i< document.querySelectorAll(".navbar").length; i++) {
-    document.querySelectorAll(".navbar")[i].style.setProperty("background-color", primcolour)
+
+async function setPrimaryColour(){
+    document.querySelectorAll(".primary").forEach(element => {
+        element.style.setProperty("background-color", primcolour)
+    })
 }
-document.querySelector(".navbar").style.setProperty("background-color", primcolour)
-document.querySelector(".dropbtn").style.setProperty("background-color", seccolour)
-document.querySelector(".dropupbtn").style.setProperty("background-color", primcolour)
-document.querySelector(".modal-header").style.setProperty("background-color", primcolour)
-document.querySelector(".formbutton").style.setProperty("background-color", seccolour)
-document.querySelector(".navbar a.active").style.setProperty("background-color", seccolour)
+
+async function setSecondaryColour(){
+    document.querySelectorAll(".secondary").forEach(element => {
+        element.style.setProperty("background-color", seccolour)
+    })
+}
+
 
 let token;
 let viewerId;
 const modal = document.getElementsByClassName("modal")[0];
-const navbarclick = document.getElementsByClassName("navbar bottom")[0];
+const navbarclick = document.getElementsByClassName("pill")[0];
 const table = document.querySelector("table");
 const url = 'https://graphql.anilist.co';
 main()
@@ -44,6 +47,8 @@ async function main() {
     } else {
         token = localStorage.anitoken
     }
+    setPrimaryColour()
+    setSecondaryColour()
     if (!localStorage.getItem('viewerId')) {
         await getviewerid()
     } 
@@ -54,10 +59,14 @@ async function main() {
     table.replaceChildren()
     const buttonArray = Array.from(navbarclick.children);     
     for (const button of buttonArray) {
-        if (button.className === "active") {
+        if (button.textContent === "Current") {
+            button.classList.add("active")
+            button.style.setProperty("background-color", primcolour)
             await sortList(localStorage[button.textContent.toLowerCase()] ? localStorage[button.textContent.toLowerCase()] : "Title asc", `anime_${button.textContent.toLowerCase()}`)
             datahandler(JSON.parse(localStorage[`anime_${button.textContent.toLowerCase()}`]))
+            continue
         }
+        //button.style.setProperty("background-color", seccolour)
         sortList(localStorage[button.textContent.toLowerCase()] ? localStorage[button.textContent.toLowerCase()] : "Title asc", `anime_${button.textContent.toLowerCase()}`)
     }
     makenavbarwork()
@@ -65,7 +74,6 @@ async function main() {
     searchbarfunc()
     toggledrop(document.getElementsByClassName("dropupbtn")[0])
     toggledrop(document.getElementsByClassName("dropbtn")[0])
-    spanclose()
 }
 
 
@@ -120,12 +128,16 @@ async function addsortbutton() {
             option.checked = true
         }
         option.addEventListener('click', async function() {
-            const activeElement = document.querySelector('.navbar.bottom .active');
+            const activeElement = document.querySelector('.pill .active');
             localStorage.setItem(activeElement.textContent.toLowerCase(), this.value)
             table.replaceChildren()
             await sortList(this.value, `anime_${activeElement.textContent.toLowerCase()}`)
             datahandler(JSON.parse(localStorage[`anime_${activeElement.textContent.toLowerCase()}`]))
             setselectedsort(localStorage[activeElement.textContent.toLowerCase()])
+            let dropdowns = document.getElementsByClassName("dropup-content")[0];
+            if (dropdowns.classList.contains('show')) {
+                dropdowns.classList.remove('show')
+            }
         })
     });
 }
@@ -150,30 +162,24 @@ async function makenavbarwork(){
 }
 
 async function navbarclicker(element) {
-    if (element.className === "active") {
+    if (element.classList.contains("active")) {
         return
     }
-    let allnavitems = element.parentNode.children;
-    for (let i=0; i < allnavitems.length; i++) {
-        allnavitems[i].className = "inactive";
-        allnavitems[i].style.setProperty("background-color", primcolour)
-        if (allnavitems[i].textContent === element.textContent) {
-            element.className = "active"
-            element.style.setProperty("background-color", seccolour)
+    let allnavitems = Array.from(element.parentNode.children);
+    allnavitems.forEach(item => {
+        item.classList.remove("active")
+        item.style.setProperty("background-color", seccolour)
+        if (item.textContent === element.textContent) {
+            table.id = item.textContent.toLowerCase()
+            item.classList.add("active")
+            item.style.setProperty("background-color", primcolour)
         }
-    }
+    })
     document.body.scrollTop = 0; // For Safari
     document.documentElement.scrollTop = 0;
     table.replaceChildren()
     datahandler(JSON.parse(localStorage[`anime_${element.textContent.toLowerCase()}`]))
     setselectedsort(localStorage[element.textContent.toLowerCase()])
-}
-
-async function spanclose() {
-    const span = document.getElementsByClassName("close")[0];
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
 }
 
 
@@ -202,7 +208,7 @@ async function fillpage() {
                                     status,
                                     progress,
                                     updatedAt,
-                                    createdAt
+                                    createdAt,
                                     startedAt {
                                         year,
                                         month,
@@ -253,7 +259,7 @@ async function handleError(error) {
 
 async function plusone(element) {
     element.parentNode.dataset.progress = parseInt(element.parentNode.dataset.progress) + 1;
-    element.parentNode.children[1].children[1].textContent = `${element.parentNode.dataset.progress}/${element.parentNode.dataset.episodes} episodes`;
+    element.parentNode.querySelector('.item_subtitle').textContent = `${element.parentNode.dataset.progress}/${element.parentNode.dataset.episodes} episodes`;
     if ((parseInt(element.parentNode.dataset.next_ep_nr)-parseInt(element.parentNode.dataset.progress)) > 1) {
         element.parentNode.style.backgroundColor = tricolour
     } else {
@@ -286,6 +292,37 @@ async function plusone(element) {
         })
     };
 
+    showToast(`${element.parentNode.querySelector('.item_title').textContent} updated progress`)
+
+    old_data = JSON.parse(localStorage[`anime_${document.querySelector('.pill button.active').textContent.toLowerCase()}`])
+    if (element.parentNode.dataset.episodes === '?' || parseInt(element.parentNode.dataset.progress) < parseInt(element.parentNode.dataset.episodes)) {
+        old_data.map(item => {
+            if (item['media']['id'] == element.parentNode.dataset.id) {
+                item['media']['mediaListEntry']['progress'] = parseInt(element.parentNode.dataset.progress)
+            }
+            return item
+        })
+        localStorage[`anime_${document.querySelector('.pill button.active').textContent.toLowerCase()}`] = JSON.stringify(old_data)
+    } else {
+        let removed_entry
+        let updated_old = old_data.filter(item => {
+            if (item['media']['id'] == element.parentNode.dataset.id) {
+                removed_entry = item
+                return false
+            }
+            return true
+        })
+        //remove entry from old status
+        localStorage[`anime_${document.querySelector('.pill button.active').textContent.toLowerCase()}`] = JSON.stringify(updated_old)
+        //remove entry from table
+        table.removeChild(element.parentNode)
+        // add entry to new status
+        let new_data = JSON.parse(localStorage[`anime_completed`])
+        new_data.push(removed_entry)
+        localStorage[`anime_completed`] = JSON.stringify(new_data)
+        sortList(localStorage['completed'], `anime_completed` )
+    }
+
     fetch(url, options).then(handleResponse)
                        .catch(handleError);
 }
@@ -295,15 +332,14 @@ async function splitdata(data) {
     const statuses = ["current", "planning", "paused", "completed"]
     statuses.forEach(status => {
         let entries = []
-        for (let i = 0; i < mediaList.length; i++) {
-            let listWithinmedialist = mediaList[i]['entries']
-            for (let j = 0; j < listWithinmedialist.length; j++) {
-                if (listWithinmedialist[j]['media']['mediaListEntry']['status'] != status.toUpperCase()) {
-                    continue
+        mediaList.forEach(media => {
+            let listWithinmedialist = media['entries']
+            listWithinmedialist.forEach(media => {
+                if (media['media']['mediaListEntry']['status'] === status.toUpperCase()) {
+                    entries.push(media)
                 }
-                entries.push(listWithinmedialist[j])
-            }
-        }
+            })
+        })
         localStorage.setItem(`anime_${status}`, JSON.stringify(entries))
     });
 }
@@ -407,85 +443,92 @@ async function sortList(sortmeth, animelist) {
 
 
 async function datahandler(filteredandsortedentries) {
-    for (let i = 0; i < filteredandsortedentries.length; i++) {
+    let fragment = document.createDocumentFragment()
+    filteredandsortedentries.forEach(media => {
         let myitem = document.createElement("tr");
-        myitem.appendChild(document.createElement("td"))
-        myitem.appendChild(document.createElement("td"))
-        myitem.appendChild(document.createElement("td"))
         myitem.className = "list_item";
-        //data
-        myitem.dataset.id = filteredandsortedentries[i]['media']['id'];
-        myitem.dataset.progress = filteredandsortedentries[i]['media']['mediaListEntry']["progress"];
-        myitem.dataset.episodes = filteredandsortedentries[i]['media']['episodes'] ? filteredandsortedentries[i]['media']['episodes'] : "?";
-        //item text elements
-        let tablezero = myitem.children[0]
+        myitem.dataset.id = media['media']['id'];
+        
+        let tablezero = document.createElement("td");
         let imagetable = document.createElement("img");
-        imagetable.src = filteredandsortedentries[i]['media']['coverImage']['medium'];
+        imagetable.src = media['media']['coverImage']['medium'];
         imagetable.loading = "lazy"
         tablezero.appendChild(imagetable)
-        //myitem.appendChild(tablezero)
-        let tableelone = myitem.children[1]
-        tableelone.appendChild(document.createElement("p"))
-        tableelone.appendChild(document.createElement("p"))
-        tableelone.appendChild(document.createElement("p"))
+
+        let tableelone = document.createElement("td");
         tableelone.className = "clickable-item"
         tableelone.addEventListener('click', async function() {
             clickables(this)
         })
+
         //title
-        let myitemtitle = tableelone.children[0];
+        let myitemtitle = document.createElement("p");
         myitemtitle.className = "item_title"
-        myitemtitle.textContent = filteredandsortedentries[i]['media']['title']['romaji'];
+        myitemtitle.textContent = media['media']['title']['romaji'];
+
         //subtitle
-        let myitemsubtitle = tableelone.children[1];
+        let myitemsubtitle = document.createElement("p");
         myitemsubtitle.className = "item_subtitle"
-        myitemsubtitle.textContent = `${myitemtitle.parentNode.parentNode.dataset.progress}/${myitemtitle.parentNode.parentNode.dataset.episodes} episodes`
+        myitemsubtitle.textContent = `${media['media']['mediaListEntry']["progress"]}/${media['media']['episodes'] ? media['media']['episodes'] : "?"} episodes`
+
         //subsubtitle
-        let myitemsubsubtitle = tableelone.children[2];
+        let myitemsubsubtitle = document.createElement("p");
         myitemsubsubtitle.className = "item_subtitle";
         myitemsubsubtitle.style.fontWeight = "bold";
-        if (filteredandsortedentries[i]['media']['nextAiringEpisode']) {
-            myitem.dataset.next_ep = filteredandsortedentries[i]['media']['nextAiringEpisode']['timeUntilAiring'];
-            myitem.dataset.next_ep_nr = filteredandsortedentries[i]['media']['nextAiringEpisode']['episode']
-            myitemsubsubtitle.textContent = `Ep ${filteredandsortedentries[i]['media']['nextAiringEpisode']['episode']} airing in ${(filteredandsortedentries[i]['media']['nextAiringEpisode']['timeUntilAiring']/3600).toFixed(0)} hours`
-            if ((parseInt(myitem.dataset.next_ep_nr)-parseInt(myitem.dataset.progress)) > 1) {
-                myitem.style.backgroundColor = tricolour
-            }
-        } else {
-            myitem.dataset.next_ep = 999999999999999;
-            myitemsubsubtitle.textContent = 'Finished';
-        };
+
+        tableelone.appendChild(myitemtitle)
+        tableelone.appendChild(myitemsubtitle)
+        tableelone.appendChild(myitemsubsubtitle)
+
+        myitem.appendChild(tablezero);
+        myitem.appendChild(tableelone);
+
         //item +1 element
         if (table.id != "completed") {
-            let tableeltwo = myitem.children[2]
+            let tableeltwo = document.createElement("td");
+            tableeltwo.className = "update1";
+            tableeltwo.textContent = "+1";
+            myitem.dataset.progress = media['media']['mediaListEntry']["progress"];
+            myitem.dataset.episodes = media['media']['episodes'] ? media['media']['episodes'] : "?";
             tableeltwo.addEventListener('click', async function() {
                 plusone(this)
             })
-            tableeltwo.className = "update1";
-            tableeltwo.textContent = "+1";
+
+            if (media['media']['nextAiringEpisode']) {
+                myitem.dataset.next_ep = media['media']['nextAiringEpisode']['timeUntilAiring'];
+                myitem.dataset.next_ep_nr = media['media']['nextAiringEpisode']['episode']
+                myitemsubsubtitle.textContent = `Ep ${media['media']['nextAiringEpisode']['episode']} airing in ${(media['media']['nextAiringEpisode']['timeUntilAiring']/3600).toFixed(0)} hours`
+                if ((parseInt(myitem.dataset.next_ep_nr)-parseInt(myitem.dataset.progress)) > 1) {
+                    myitem.style.backgroundColor = tricolour
+                }
+            } else {
+                if(myitem.dataset.episodes != '?'){
+                    myitemsubsubtitle.textContent = 'Finished';
+                }
+            }
+            myitem.appendChild(tableeltwo)
         }
-        table.appendChild(myitem)
-    }
+        fragment.appendChild(myitem)
+    })
+    table.appendChild(fragment)
 }
 
 async function searching() {
-    let input, filter, tables, tr, td, i, txtValue;
+    let input, filter, tr, td, txtValue;
     input = document.getElementById("myInput");
     filter = input.value.toUpperCase();
-    tables = document.getElementsByTagName("table");
-    thistable = Array.from(tables).concat();
-    tr = document.getElementsByTagName("tr");
-    for (i = 0; i < tr.length; i++) {
-        td = tr[i].getElementsByTagName("td")[1];
+    tr = table.querySelectorAll("tr");
+    tr.forEach(entry => {
+        td = entry.querySelector(".item_title")//getElementsByTagName("td")[1];
         if (td) {
             txtValue = td.textContent || td.innerText;
             if (txtValue.toUpperCase().indexOf(filter) > -1) {
-                tr[i].style.display = "";
+                entry.style.display = "";
             } else {
-                tr[i].style.display = "none";
+                entry.style.display = "none";
             }
-        }       
-    }
+        }
+    })
 }
 
 
@@ -549,37 +592,41 @@ async function createmodal(data) {
     modalgenres.textContent = `${data['data']['Media']['genres']}`.split(',').join(', ');
     let modalbutton = document.getElementsByClassName("dropdown")[0];
     modalbutton.dataset.aniid = data['data']['Media']['id'];
-    modalbutton.children[0].textContent =(data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['status'] : "ADD")
-    let notesform = document.getElementById('notesform')
-    notesform.children[0].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['notes'] : "")
-    notesform.children[1].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['progress']: 0)
-    notesform.children[2].onclick = async function() {updatenotes(this)}
+    modal.querySelector('.dropbtn').textContent =(data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['status'] : "ADD")
+    let notesform = document.querySelectorAll('#notesform .formtext')
+    notesform[0].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['notes'] : "")
+    notesform[1].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['progress']: 0)
+    let savebutton = document.getElementById('formbutton')
+    savebutton.onclick = async function() {updatenotes(this)}
     let modal_body = document.getElementsByClassName("modal-body")[0];
-    modal_body.innerHTML = `<h3>Description</h3><p>${data['data']['Media']['description']}</p>`;
+    modal_body.children[0].innerHTML = `<h3>Description</h3><p>${data['data']['Media']['description']}</p>`;
     modal.style.display = 'block';
 }
 
 async function updatenotes(element) {
-    let tableentry = document.querySelector((`[data-id='${element.parentNode.parentNode.children[2].dataset.aniid}']`))
-    tableentry.dataset.progress = parseInt(element.parentNode.children[1].value)
-    tableentry.children[1].children[1].textContent = `${tableentry.dataset.progress}/${tableentry.dataset.episodes} episodes`
+    let stat = document.getElementsByClassName("dropbtn")[0].textContent
+    let tableentry = document.querySelector((`[data-id='${element.parentNode.dataset.aniid}']`))
+    let notesform = document.querySelectorAll('#notesform .formtext')
+    tableentry.dataset.progress = parseInt(notesform[1].value)
+    tableentry.querySelector('.item_subtitle').textContent = `${tableentry.dataset.progress}/${tableentry.dataset.episodes} episodes`
     if ((parseInt(tableentry.dataset.next_ep_nr)-parseInt(tableentry.dataset.progress)) > 1) {
         tableentry.style.backgroundColor = tricolour
     } else {
         tableentry.style.backgroundColor = "#FFFFFF"
     }
     let query = `
-    mutation ($notes: String, $mediaId: Int, $progress: Int) { 
-      anime000: SaveMediaListEntry (mediaId: $mediaId, notes: $notes, progress: $progress) {
+    mutation ($notes: String, $mediaId: Int, $progress: Int, $status: MediaListStatus) { 
+      anime000: SaveMediaListEntry (mediaId: $mediaId, notes: $notes, progress: $progress, status: $status) {
             id 
       }
     }
     `;
 
     let variables = {
-        mediaId: parseInt(element.parentNode.parentNode.children[2].dataset.aniid),
-        notes: element.parentNode.children[0].value,
-        progress: parseInt(element.parentNode.children[1].value),
+        mediaId: parseInt(element.parentNode.dataset.aniid),
+        notes: notesform[0].value,
+        progress: parseInt(notesform[1].value),
+        status: stat
 
     };
 
@@ -595,93 +642,93 @@ async function updatenotes(element) {
             variables: variables
         })
     };
+    showToast(`${tableentry.querySelector('.item_title').textContent} updated`)
+
+    const old_status = document.querySelector('.pill button.active').textContent.toLowerCase()
+
+    old_data = JSON.parse(localStorage[`anime_${old_status}`])
+    old_data.map(item => {
+        if (item['media']['id'] == element.parentNode.dataset.aniid) {
+            item['media']['mediaListEntry']['progress'] = parseInt(element.parentNode.dataset.progress) ? parseInt(element.parentNode.dataset.progress) : 0
+            item['media']['mediaListEntry']['notes'] = notesform[0].value
+            item['media']['mediaListEntry']['status'] = stat
+
+        }
+        return item
+    })
+    if (old_status === stat.toLowerCase()) {
+        localStorage[`anime_${old_status}`] = JSON.stringify(old_data)
+    } else {
+        let removed_entry
+        let updated_old = old_data.filter(item => {
+            if (item['media']['id'] == element.parentNode.dataset.aniid) {
+                removed_entry = item
+                return false
+            }
+            return true
+        })
+        //remove entry from old status
+        localStorage[`anime_${old_status}`] = JSON.stringify(updated_old)
+        //remove entry from table
+        table.removeChild(tableentry)
+        // add entry to new status
+        let new_data = JSON.parse(localStorage[`anime_${stat.toLowerCase()}`])
+        new_data.push(removed_entry)
+        localStorage[`anime_${stat.toLowerCase()}`] = JSON.stringify(new_data)
+        sortList(localStorage[stat.toLowerCase()], `anime_${stat.toLowerCase()}` )
+    }
 
     fetch(url, options).then(handleResponse)
                        .catch(handleError);
+
+    
 }
 
 async function adddropdown() {
     let dropdownbutts = document.getElementsByClassName("dropdown-content")[0];
+    let statusbutton = document.getElementsByClassName("dropbtn")[0];
     Array.from(dropdownbutts.children).forEach(el => {
         el.addEventListener('click', async function() {
-            updatestatus(this)
+            statusbutton.textContent = this.textContent
+            if (dropdownbutts.classList.contains('show')) {
+                dropdownbutts.classList.remove('show')
+            }
         })
     });
 }
 
-async function updatestatus(element) {
-    element.parentNode.parentNode.children[0].textContent = element.textContent
-    let query;
-    let variables;
-    if (element.textContent == "DELETE") {
-        query = `
-        mutation ($id: Int) { 
-            anime000: DeleteMediaListEntry(id: $id) {
-                deleted
-          }
-        }
-        `;
-    
-        variables = {
-            id: parseInt(element.parentNode.parentNode.dataset.aniid),
-    
-        };
-    } else {
-        query = `
-        mutation ($status: MediaListStatus, $mediaId: Int) { 
-            anime000: SaveMediaListEntry (mediaId: $mediaId, status: $status) {
-                id 
-        }
-        }
-        `;
+async function showToast(message) {
+    const toast = document.querySelector('.toast');
+    toast.style.backgroundColor = seccolour
+    toast.textContent = message;
+    toast.style.display = 'block'
 
-        variables = {
-            mediaId: parseInt(element.parentNode.parentNode.dataset.aniid),
-            status: element.textContent,
-
-        };
-    }
-    let options = {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query,
-            variables: variables
-        })
-    };
-
-    fetch(url, options).then(handleResponse)
-                       .catch(handleError);
+    setTimeout(() => {
+        toast.style.display = 'none'
+    }, 2000);
 }
 
   
 // When the user clicks anywhere outside of the modal, close it
-window.onclick = function(event) {
-    if (event.target == modal) {
+window.onclick = async function(event) {
+    if (event.target === modal) {
         modal.style.display = "none";
     }
-    if (!event.target.matches('.dropbtn')) {
+}
+
+window.ontouchstart = async function(event) {
+    if (!event.target.matches('.dropdown-content a') && !event.target.matches('.dropbtn')) {
         // document.getElementById("MyDropdown").classList.toggle("show");
-        let dropdowns = document.getElementsByClassName("dropdown-content");
-        for (let i = 0; i < dropdowns.length; i++) {
-            let openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-            }
+        let dropdowns = document.getElementsByClassName("dropdown-content")[0];
+        if (dropdowns.classList.contains('show')) {
+            dropdowns.classList.remove('show')
         }
     }
-    if (!event.target.matches('.dropupbtn')) {
+    if (!event.target.matches('.dropup-content label span') && !event.target.matches('.dropupbtn')) {
         // document.getElementById("MyDropdown").classList.toggle("show");
-        let dropdowns = document.getElementsByClassName("dropup-content");
-        for (let i = 0; i < dropdowns.length; i++) {
-            let openDropdown = dropdowns[i];
-            if (openDropdown.classList.contains('show')) {
-                openDropdown.classList.remove('show');
-            }
+        let dropdowns = document.getElementsByClassName("dropup-content")[0];
+        if (dropdowns.classList.contains('show')) {
+            dropdowns.classList.remove('show')
         }
     }
 }
@@ -691,7 +738,7 @@ async function onpullrefresh() {
     table.replaceChildren()
     const buttonArray = Array.from(navbarclick.children);
     for (const button of buttonArray) {
-        if (button.className === "active") {
+        if (button.classList.contains("active")) {
             await sortList(localStorage[button.textContent.toLowerCase()], `anime_${button.textContent.toLowerCase()}`)
             datahandler(JSON.parse(localStorage[`anime_${button.textContent.toLowerCase()}`]))
         }
@@ -706,3 +753,18 @@ PullToRefresh.init({
         //window.location.reload();
     }
   });
+
+let lastScrollTop = 0;
+window.addEventListener('scroll', function() {
+    let scrollTop = window.scrollY || document.documentElement.scrollTop;
+    if (scrollTop > lastScrollTop) {
+        // Scrolling down
+        navbarclick.style.bottom = '-60px'; // Adjust based on header height
+        document.getElementsByClassName("dropup")[0].style.bottom = '-100px'
+    } else {
+        // Scrolling up
+        navbarclick.style.bottom = '45px';
+        document.getElementsByClassName("dropup")[0].style.bottom = '85px'
+    }
+    lastScrollTop = scrollTop;
+});

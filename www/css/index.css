@@ -1,14 +1,6 @@
 * {box-sizing: border-box}
 
-/* Set height of body and the document to 100% */
 body, html {
-  
-  margin: 0;
-  font-family: Arial;
-}
-
-body, html {
-  /* height: 100%; */
   margin: 0;
   font-size: 14px;
   font-family: Arial, Helvetica, sans-serif;
@@ -16,10 +8,6 @@ body, html {
 
 .container {
   padding: 16px;
-}
-
-.img {
-  max-width: 16vw;
 }
 
 td img {
@@ -30,10 +18,9 @@ td img {
 
 
 .header {
-  /* background-color: #303F9F; */
   padding: 5px 30px;
   text-align: center;
-  color: white;
+  color: #f2f2f2;
 }
 
 .header h2 {
@@ -42,21 +29,25 @@ td img {
 }
 
 .navbar {
-  /* background-color:#303F9F; */
   overflow: hidden;
   width: 100%;
-}
-.bottom {
   position: fixed;
   bottom: 0;
 }
+.pill {
+  position: fixed;
+  bottom: 45px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  padding: 0px 8px;
+}
 
 .navbar a {
-  float: left;
   display: block;
   color: #f2f2f2;
   text-align: center;
-  padding: 10px 0px;
+  padding: 5px 0px;
   text-decoration: none;
   font-size: 17px;
   float: left;
@@ -70,9 +61,23 @@ td img {
   color: black;
 }
 
-.navbar a.active {
-  /* background-color: #3F51B5; */
-  color: white;
+.pill button {
+  display: block;
+  color: #f2f2f2;
+  text-align: center;
+  padding: 10px 0px;
+  text-decoration: none;
+  font-size: 14px;
+  float: left;
+  border: none;
+  outline: none;
+  cursor: pointer;
+  border-radius: 20px;
+}
+
+.pill a:hover {
+  background-color: #ddd;
+  color: black;
 }
 
 table {
@@ -107,24 +112,16 @@ tr:first-child {
   overflow: hidden;
 }
 
-tr:last-child {
-  border-bottom: none;
-}
-
-p.item_title {
+.item_title {
   font-size: 12.5px;
   margin: 3px 0px;
   font-weight: bold;
 }
 
-p.item_subtitle {
+.item_subtitle {
   font-size: 12px;
   margin: 5px 0px;
   color: #757575;
-}
-
-td {
-  cursor: pointer;
 }
 
 td.clickable-item {
@@ -137,13 +134,8 @@ td.update1 {
   font-size: 20px;
 }
 
-a.dropbtn{
-  padding-bottom: 11px;
-  font-size: 16px;
-}
-.dropbtn {
-  /* background-color: #3F51B5; */
-  color: white;
+.dropbtn, #formbutton {
+  color: #f2f2f2;
   padding: 8px;
   font-size: 16px;
   border: none;
@@ -153,38 +145,36 @@ a.dropbtn{
   width: 100%
 }
 
-/* .dropbtn:hover, .dropbtn:focus {
-  background-color: #2980B9;
-} */
-
 .dropupbtn {
-  /* background-color: #303F9F; */
-  color: white;
-  padding: 16px;
+  color: #f2f2f2;
+  padding: 10px;
   font-size: 16px;
   border: none;
   border-radius: 200px;
 }
 
-
 .dropdown {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-direction: row;
 }
 
 .dropdown-content {
   display: none;
   position: absolute;
-  background-color: #f1f1f1;
-  min-width: 160px;
-  overflow: auto;
+  background-color: #f2f2f2;
+  min-width: 120px;
+  overflow: clip;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   z-index: 10;
+  top: 30px;
 }
 
-.dropdown-content a {
+.dropdown-content a, .dropup-content label, .dropup-content a {
   color: black;
-  padding: 12px 16px;
+  padding: 6px 8px;
   text-decoration: none;
   display: block;
 }
@@ -194,33 +184,18 @@ a.dropbtn{
 .dropup {
   position: fixed;
   display: inline-block;
-  bottom: 50px;
-  right: 16px;
+  bottom: 85px;
+  right: 8px;
 }
 
 .dropup-content {
   display: none;
   position: absolute;
   background-color: #f1f1f1;
-  min-width: 160px;
+  min-width: max-content;
   bottom: 50px;
   right: 16px;
   z-index: 1;
-}
-
-.dropup-content a {
-  color: black;
-  padding: 12px 16px;
-  text-decoration: none;
-  display: block;
-}
-
-.dropup-content a:hover {background-color: #ddd}
-
-.dropup-content label {
-	display: block;
-	padding: 4px 4px;
-	cursor: pointer;
 }
 
 .dropup-content input[type="radio"] {
@@ -232,9 +207,10 @@ a.dropbtn{
 	color: #0000ff; /* Blue color for selected item */
 }
 
-
-
-.show {display: block;}
+.show {
+  display: block;
+  visibility: visible;
+}
 
 /* The Modal (background) */
 .modal {
@@ -284,39 +260,26 @@ a.dropbtn{
   to {top:0; opacity:1}
 }
 
-/* The Close Button */
-.close {
-  color: white;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
-}
-
 .modal-header {
-  /* background-color: #303F9F; */
-  color: white;
+  color: #f2f2f2;
   display: inline-block;
 }
 
 
-#myInput,#search_anime, #numb {
+.searchbar {
   width: 100%;
   font-size: 16px;
   padding: 12px 20px 12px 40px;
   border: 1px solid #ddd;
 }
 
+.search {
+  display: flex;
+  justify-content: space-between;
+}
 
-#search_anime_button, #submitbutton, #urlbutton {
-  /* background-color: #3F51B5; */
-  color: white;
+#search_anime_button, #urlbutton {
+  color: #f2f2f2;
   padding: 8px 8px;
   border: none;
   border-radius: 5px;
@@ -327,8 +290,12 @@ a.dropbtn{
 }
 
 .title-container {
-  font-size: medium;
+  font-size: calc(2vw + 0.1vh + 1.5vmin);
   font-weight: bold;
+}
+
+.genres {
+  font-style: italic;
 }
 
 .form {
@@ -336,19 +303,7 @@ a.dropbtn{
   font-family: 'Arial', sans-serif;
   display: flex;
   flex-direction: column; /* Set to 'row' if you want inputs side by side */
-  align-items: center; /* Adjust alignment as needed */
-}
-
-
-.formbutton {
-  /* background-color: #3F51B5; */
-  color: white;
-  padding: 6px 10px;
-  border: none;
-  border-radius: 5px;
-  cursor: pointer;
-  width: 100%;
-  font-size: 20px;
+  align-items: left; /* Adjust alignment as needed */
 }
 
 .formtext {
@@ -360,4 +315,20 @@ a.dropbtn{
   border-radius: 5px;
   font-size: 14px;
   color: #333;
+}
+
+.toast {
+  display: none;
+  min-width: 250px;
+  /*background-color: #333;*/
+  color: #fff;
+  text-align: center;
+  border-radius: 2px;
+  padding: 16px;
+  position: fixed;
+  z-index: 1;
+  left: 50%;
+  bottom: 30px;
+  font-size: 17px;
+  transform: translateX(-50%);
 }

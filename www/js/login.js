@@ -10,14 +10,36 @@ if (!localStorage.seccolour) {
 } else {
     seccolour = localStorage.seccolour
 }
-document.querySelector(".header").style.setProperty("background-color", primcolour)
-document.querySelector(".navbar").style.setProperty("background-color", primcolour)
-document.querySelector("#urlbutton").style.setProperty("background-color", seccolour)
+async function setPrimaryColour(){
+    document.querySelectorAll(".primary").forEach(element => {
+        element.style.setProperty("background-color", primcolour)
+    })
+}
+
+async function setSecondaryColour(){
+    document.querySelectorAll(".secondary").forEach(element => {
+        element.style.setProperty("background-color", seccolour)
+    })
+}
+
+setPrimaryColour()
+setSecondaryColour()
 
 const pricolorPicker = document.getElementById('primarycolourPicker')
 const seccolorPicker = document.getElementById('secondarycolourPicker')
 const tricolorPicker = document.getElementById('tripondarycolourPicker')
 const anilistbutton = document.getElementById("submitbutton")
+
+async function showToast(message) {
+    const toast = document.querySelector('.toast');
+    toast.style.backgroundColor = seccolour
+    toast.textContent = message;
+    toast.style.display = 'block'
+
+    setTimeout(() => {
+        toast.style.display = 'none'
+    }, 3000);
+}
 
 pricolorPicker.addEventListener('input', function() {
     // Get the selected color
@@ -53,7 +75,7 @@ function onDeviceReady() {
             var failedUrl = event.url;
             const urlParams = new URLSearchParams(failedUrl.split('#')[1]);
             localStorage.anitoken = urlParams.get("access_token")
-    
+            showToast("You are logged in")
             // Close the InAppBrowser
             ref.close();
         })
