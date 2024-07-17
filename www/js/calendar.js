@@ -28,7 +28,7 @@ const table = document.querySelector("table");
 const timenow = Date.now();
 const daysw = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 const modal = document.getElementsByClassName("modal")[0];
-const mydropups = document.getElementsByClassName("dropupbtn");
+const mydropups = document.querySelector(".dropupbtn");
 const seasonnumber =(new Date()).getMonth();
 let theseason
 if (seasonnumber < 3) {
@@ -52,22 +52,98 @@ async function main() {
     }
     setPrimaryColour()
     setSecondaryColour()
-    mydropups[0].textContent = theseason
+    mydropups.textContent = theseason
     await dayactive()
     if (!localStorage[theseason] || parseInt(localStorage[`LastUpdated_${theseason}`])+1800000 < Date.now()) {
         await pagefill(theseason, (new Date()).getFullYear())
     }
     table.replaceChildren()
     const active = document.querySelector(".pill button.active")
-    active.style.setProperty("background-color", primcolour)
-    handleData(JSON.parse(localStorage[theseason]), active.textContent)
+    active.style.setProperty("background-color", seccolour)
+    //handleData(JSON.parse(localStorage[theseason]), active.textContent)
+    andorbutton()
+    resetbutton()
+    genrebuttons()
     addsortbutton()
     makenavbarwork()
     searchbarfunc()
     toggledrop(document.getElementsByClassName("dropbtn")[0])
-    toggledrop(mydropups[0])
+    toggledrop(mydropups)
+    toggledrop(document.querySelector('.filterbtn'))
+    adddropdown()
+    await handleData(JSON.parse(localStorage[theseason]))
+    //document.querySelector(`#${active.textContent}`).scrollIntoView()
+    const container = document.querySelector('.container');
+    window.scrollTo(0, document.querySelector(`#${active.textContent}`).offsetTop+70)
+    //container.scrollTop - document.querySelector(`#${active.textContent}`).offsetTop
+    // window.location.href = `#${active.textContent}`
 }
 main()
+
+async function resetbutton() {
+    resetbutton = document.querySelector('.reset').addEventListener('click', async function() {
+        document.querySelectorAll('.genre.active').forEach(button => {
+            button.classList.remove('active')
+            button.style.setProperty("background-color", seccolour)
+        })
+        filterlist()
+    })
+}
+
+async function filterlist() {
+    let andor = document.querySelector('.andor').innerText
+    let activegenres = document.querySelectorAll('.genre.active')
+    let buttonTexts = Array.from(activegenres).map(button => button.innerText);
+    let tr, td, txtValue;
+    tr = table.getElementsByTagName("tr");
+    Array.from(tr).forEach(entry => {
+        td = entry.querySelector(".trgenres")//getElementsByTagName("td")[1];
+        if (td) {
+            txtValue = entry.textContent || entry.innerText;
+            if (andor == 'And') {
+                if (buttonTexts.every(substring => txtValue.includes(substring))) {
+                    entry.style.display = "";
+                } else {
+                    entry.style.display = "none";
+                }
+            }
+            if (andor == 'Or') {
+                if (buttonTexts.some(substring => txtValue.includes(substring)) || buttonTexts.length == 0) {
+                    entry.style.display = "";
+                } else {
+                    entry.style.display = "none";
+                }
+            }
+        }
+    })
+}
+
+async function genrebuttons() {
+    document.querySelectorAll('.genre').forEach(button => {
+        button.addEventListener('click', async function() {
+            button.classList.toggle('active')
+            if (button.classList.contains('active')) {
+                button.style.setProperty("background-color", primcolour)
+            } else {
+                button.style.setProperty("background-color", seccolour)
+            }
+            //do filtering function
+            filterlist()
+        })
+    })
+}
+
+async function andorbutton() {
+    document.querySelector('.andor').addEventListener('click', async function() {
+        if (this.innerText == "And") {
+            this.innerText = "Or";
+        } else {
+            this.innerText = "And";
+        }
+        filterlist()
+        //do filtering
+    })
+}
 
 async function toggledrop(element){
     element.addEventListener('click', function() {
@@ -85,11 +161,12 @@ async function addsortbutton(){
             }
             table.replaceChildren()
             const navigationbar = document.querySelector(".pill button.active")   
-            handleData(JSON.parse(localStorage[this.textContent]), navigationbar.textContent)
+            handleData(JSON.parse(localStorage[this.textContent]))
             let dropdowns = document.getElementsByClassName("dropup-content")[0];
             if (dropdowns.classList.contains('show')) {
                 dropdowns.classList.remove('show')
             }
+            window.scrollTo(0, document.querySelector(`#Mon`).offsetTop+70)
         })
     })
 }
@@ -116,9 +193,8 @@ async function navbarclicker(element) {
         item.style.setProperty("background-color", seccolour)
         if (item.textContent === element.textContent) {
             item.classList.add('active')
-            item.style.setProperty("background-color", primcolour)
-            table.replaceChildren()
-            handleData(JSON.parse(localStorage[mydropups[0].textContent]), item.textContent)
+            item.style.setProperty("background-color", seccolour)
+            window.scrollTo(0, table.querySelector(`#${element.textContent}`).offsetTop+70)
         }
     })
 }
@@ -131,7 +207,7 @@ async function searchbarfunc() {
 }
 
 async function pagefill(aseason, ayear) {
-    mydropups[0].textContent = aseason
+    mydropups.textContent = aseason
     let data = []
     let lastpage = 100
     let currentpage = 1
@@ -145,6 +221,7 @@ async function pagefill(aseason, ayear) {
                 media (season: $season, seasonYear: $seasonYear, type: ANIME) {
                     description,
                     episodes,
+                    genres,
                     title {
                         romaji
                     },
@@ -216,22 +293,22 @@ async function splitdata(data, aseason){
         "Fri": [],
         "Sat": [],
         "Sun": [],
-        "???": []
+        "NA": []
     };
     data.forEach(list => {
         let listentry = list['data']['Page']['media']
         listentry.forEach(entry => {
             if (entry['nextAiringEpisode']) {
-                let airday = new Date((timenow / 1000 + entry['nextAiringEpisode']['timeUntilAiring'])*1000).getDay();
+                let airday = new Date((timenow / 1000 + entry['nextAiringEpisode']['timeUntilAiring']*1000)).getDay();
                 days[daysw[airday]].push(entry)
             } else {
-                days['???'].push(entry)
+                days['NA'].push(entry)
             }
 
         })
     })
     for (let key in days) {
-        if (key === "???"){
+        if (key === "NA"){
             continue
         }
         days[key].sort((a, b) => {
@@ -256,124 +333,103 @@ async function splitdata(data, aseason){
     localStorage.setItem(aseason, JSON.stringify(days))
 }
 
-async function handleData(data, activeday){
+async function handleData(data){
     let fragment = document.createDocumentFragment()
-    data[activeday].forEach(media => {
+    Object.keys(data).forEach(day => {
         let myitem = document.createElement("tr");
-        myitem.className = "list_item";
-        myitem.dataset.id = media['id'];
-
-        let tablezero = document.createElement("td");
-        let imagetable = document.createElement("img");
-        imagetable.src = media['coverImage']['medium'];
-        imagetable.loading = "lazy";
-        tablezero.appendChild(imagetable)
-
-        let tableelone = document.createElement("td")
-        tableelone.className = "clickable-item"
-        tableelone.addEventListener('click', function() {
-            clickables(this)
-        })
-
-        //title
-        let myitemtitle = document.createElement("p")
-        myitemtitle.className = "item_title"
-        myitemtitle.textContent = (media['mediaListEntry'] ? `\uD83D\uDC41\uFE0F${media['title']['romaji']}` : media['title']['romaji'])
-        
-        //subtitle
-        let myitemsubtitle = document.createElement("p")
-        myitemsubtitle.className = "item_subtitle";
-        myitemsubtitle.innerHTML = media['description'];
-        if (myitemsubtitle.textContent != myitemsubtitle.textContent.substring(0, 200)) {
-            myitemsubtitle.textContent = `${myitemsubtitle.textContent.substring(0, 200)}...`
-        }
-
-        tableelone.appendChild(myitemtitle)
-        tableelone.appendChild(myitemsubtitle)
-
-        if (activeday != "???") {
-            myitem.dataset.next_ep = media['nextAiringEpisode']['timeUntilAiring'];
-            let myitemsubsubtitle = document.createElement("p")
-            myitemsubsubtitle.style.fontWeight = "bold";
-            myitemsubsubtitle.className = "item_subtitle";
-            myitemsubsubtitle.textContent = `Ep ${media['nextAiringEpisode']['episode']} airing in ${(media['nextAiringEpisode']['timeUntilAiring']/3600).toFixed(0)} hours`
-            tableelone.appendChild(myitemsubsubtitle)
-        }
-        myitem.appendChild(tablezero)
-        myitem.appendChild(tableelone)
+        myitem.classList.add('weekday')
+        myitem.id = day
+        let rowcontent = document.createElement('tr')
+        rowcontent.textContent = day
+        myitem.appendChild(rowcontent)
         fragment.appendChild(myitem)
+        data[day].forEach(media => {
+            let myitem = document.createElement("tr");
+            myitem.className = "list_item";
+            myitem.dataset.id = media['id'];
+            myitem.addEventListener('click', function() {
+                clickables(this)
+            })
+
+            let tablezero = document.createElement("div");
+            let imagetable = document.createElement("img");
+            imagetable.src = media['coverImage']['medium'];
+            imagetable.loading = "lazy";
+
+            let genresinimg = document.createElement("div")
+            genresinimg.style.display = "none"
+            genresinimg.classList.add("trgenres")
+            genresinimg.textContent = `${media['genres']}`.split(',').join(', ');
+
+            tablezero.appendChild(imagetable)
+            tablezero.appendChild(genresinimg)
+
+            let rowtext = document.createElement('div')
+            rowtext.classList.add("clickable-item")
+
+            //title
+            let myitemtitle = document.createElement("p")
+            myitemtitle.className = "item_title"
+            myitemtitle.textContent = (media['mediaListEntry'] ? `\uD83D\uDC41\uFE0F${media['title']['romaji']}` : media['title']['romaji'])
+            
+            //subtitle
+            let myitemsubtitle = document.createElement("p")
+            myitemsubtitle.className = "item_subtitle";
+            myitemsubtitle.innerHTML = media['description'];
+
+            rowtext.appendChild(myitemtitle)
+            rowtext.appendChild(myitemsubtitle)
+
+            if (day != "NA") {
+                myitem.dataset.next_ep = media['nextAiringEpisode']['timeUntilAiring'];
+                let myitemsubsubtitle = document.createElement("p")
+                myitemsubsubtitle.style.fontWeight = "bold";
+                myitemsubsubtitle.className = "item_subtitle";
+                myitemsubsubtitle.textContent = `Ep ${media['nextAiringEpisode']['episode']} airing in ${(media['nextAiringEpisode']['timeUntilAiring']/3600).toFixed(0)} hours`
+                rowtext.appendChild(myitemsubsubtitle)
+            }
+            myitem.appendChild(tablezero)
+            myitem.appendChild(rowtext)
+            fragment.appendChild(myitem)
+        })
     })
     table.appendChild(fragment)
 }
 
-
-async function clickables(element) {
-    let query = `
-    query ($id: Int) { # Define which variables will be used in the query (id)
-        Media (id: $id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
-            id,
-            description (asHtml: true),
-            coverImage {
-                medium
-            }
-            title {
-                romaji
-            },
-            mediaListEntry {
-                status,
-                notes,
-                progress
-            },
-            genres
-        }
+async function findObjectByIdWithDay(data, targetId) {
+    for (const [day, objects] of Object.entries(data)) {
+      const found = objects.find(obj => obj.id === targetId);
+      if (found) return found;
     }
-    `
-    let variables = {
-        id: parseInt(element.parentNode.dataset.id)
-    }
-    const url = 'https://graphql.anilist.co'
-    let  options = {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query,
-            variables: variables
-        })
-    };
-    await fetch(url, options).then(handleResponse)
-                       .then(createmodal)
-                       .then(adddropdown)
-                       .catch(handleError);
-    
+    return null;
 }
 
-async function createmodal(data) {
+
+async function clickables(element) {
+    let stored_data = JSON.parse(localStorage[document.querySelector('.dropupbtn').textContent])
+    clicked = await findObjectByIdWithDay(stored_data, parseInt(element.dataset.id))
     let modalimg = document.getElementsByClassName("image-container")[0];
     let theimg = document.createElement("img");
-    theimg.src = data['data']['Media']['coverImage']['medium'];
+    theimg.src = clicked['coverImage']['medium'];
     theimg.loading = "lazy";
     theimg.style.float = "left";
     theimg.style.paddingRight = "16px";
     theimg.style.height = "auto";
     modalimg.replaceChildren(theimg)
     let modaltitle = document.getElementsByClassName("title-container")[0];
-    modaltitle.textContent = `${data['data']['Media']['title']['romaji']}`;
+    modaltitle.textContent = `${clicked['title']['romaji']}`;
     let modalgenres = document.getElementsByClassName("genres")[0];
-    modalgenres.textContent = `${data['data']['Media']['genres']}`.split(',').join(', ');
+    modalgenres.textContent = `${clicked['genres']}`.split(',').join(', ');
     let modalbutton = document.getElementsByClassName("dropdown")[0];
-    modalbutton.dataset.aniid = data['data']['Media']['id'];
-    modal.querySelector('.dropbtn').textContent =(data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['status'] : "ADD")
+    modalbutton.dataset.aniid = clicked['id'];
+    modal.querySelector('.dropbtn').textContent =(clicked['mediaListEntry'] ? clicked['mediaListEntry']['status'] : "ADD")
     let notesform = document.querySelectorAll('#notesform .formtext')
-    notesform[0].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['notes'] : "")
-    notesform[1].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['progress']: 0)
+    notesform[0].value = (clicked['mediaListEntry'] ? clicked['mediaListEntry']['notes'] : "")
+    notesform[1].value = (clicked['mediaListEntry'] ? clicked['mediaListEntry']['progress']: 0)
     let savebutton = document.getElementById('formbutton')
     savebutton.onclick = async function() {updatenotes(this)}
     let modal_body = document.getElementsByClassName("modal-body")[0];
-    modal_body.children[0].innerHTML = `<h3>Description</h3><p>${data['data']['Media']['description']}</p>`;
+    modal_body.children[0].innerHTML = `<h3>Description</h3><p>${clicked['description']}</p>`;
     modal.style.display = 'block';
 }
 
@@ -480,10 +536,10 @@ async function searching() {
     input = document.getElementById("myInput");
     filter = input.value.toUpperCase();
     tr = table.getElementsByTagName("tr");
-    tr.forEach(entry => {
+    Array.from(tr).forEach(entry => {
         td = entry.querySelector(".item_title")//getElementsByTagName("td")[1];
         if (td) {
-            txtValue = td.textContent || td.innerText;
+            txtValue = entry.textContent || entry.innerText;
             if (txtValue.toUpperCase().indexOf(filter) > -1) {
                 entry.style.display = "";
             } else {
@@ -529,35 +585,57 @@ window.ontouchstart = async function(event) {
             dropdowns.classList.remove('show')
         }
     }
+    if (!event.target.matches('.filter-content button') && !event.target.matches('.filterbtn')) {
+        let dropdowns = document.getElementsByClassName("filter-content")[0];
+        if (dropdowns.classList.contains('show')) {
+            dropdowns.classList.remove('show')
+        }
+    }
 }
 
 async function onpullrefresh() {
-    await pagefill(mydropups[0].textContent, currseasonindex > allseasons.indexOf(mydropups[0].textContent) ? (new Date()).getFullYear() + 1: (new Date()).getFullYear())
+    await pagefill(mydropups.textContent, currseasonindex > allseasons.indexOf(mydropups.textContent) ? (new Date()).getFullYear() + 1: (new Date()).getFullYear())
     table.replaceChildren()
     const navigationbar = document.querySelector(".pill button.active")   
-    handleData(JSON.parse(localStorage[mydropups[0].textContent]), navigationbar.textContent)
+    handleData(JSON.parse(localStorage[mydropups.textContent]))
+    window.scrollTo(0, document.querySelector(`#${navigationbar.textContent}`).offsetTop+70)
 }
 
 PullToRefresh.init({
     mainElement: 'body',
     onRefresh() {
         onpullrefresh()
-        //window.location.reload();
     }
   });
 
 let lastScrollTop = 0;
+let isScrollingProgrammatically = false;
+
+// Override the window.scrollTo method
+const originalScrollTo = window.scrollTo;
+window.scrollTo = function() {
+    isScrollingProgrammatically = true;
+    originalScrollTo.apply(this, arguments);
+    // Reset the flag after a short delay
+    setTimeout(() => {
+        isScrollingProgrammatically = false;
+    }, 100); // Adjust this delay if needed
+};
 window.addEventListener('scroll', function() {
+    if (isScrollingProgrammatically) return; // Skip if scrolling programmatically
+
     const navbarclick = document.getElementsByClassName("pill")[0];
     let scrollTop = window.scrollY || document.documentElement.scrollTop;
     if (scrollTop > lastScrollTop) {
         // Scrolling down
-        navbarclick.style.bottom = '-60px'; // Adjust based on header height
-        document.getElementsByClassName("dropup")[0].style.bottom = '-100px'
+        navbarclick.style.bottom = '-2000px'; // Adjust based on header height
+        document.getElementsByClassName("dropup")[0].style.bottom = '-2000px'
+        document.querySelector('.filter').style.bottom = '-2000px'
     } else {
         // Scrolling up
         navbarclick.style.bottom = '45px';
         document.getElementsByClassName("dropup")[0].style.bottom = '85px'
+        document.querySelector('.filter').style.bottom = '127px'
     }
     lastScrollTop = scrollTop;
 });

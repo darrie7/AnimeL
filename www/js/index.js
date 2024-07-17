@@ -69,11 +69,16 @@ async function main() {
         //button.style.setProperty("background-color", seccolour)
         sortList(localStorage[button.textContent.toLowerCase()] ? localStorage[button.textContent.toLowerCase()] : "Title asc", `anime_${button.textContent.toLowerCase()}`)
     }
+    andorbutton()
+    resetbutton()
+    genrebuttons()
     makenavbarwork()
     addsortbutton()
     searchbarfunc()
     toggledrop(document.getElementsByClassName("dropupbtn")[0])
     toggledrop(document.getElementsByClassName("dropbtn")[0])
+    toggledrop(document.querySelector('.filterbtn'))
+    adddropdown()
 }
 
 
@@ -105,6 +110,71 @@ async function getviewerid() {
 async function toggledrop(element){
     element.addEventListener('click', async function() {
         toggledropdown(this)
+    })
+}
+
+async function resetbutton() {
+    resetbutton = document.querySelector('.reset').addEventListener('click', async function() {
+        document.querySelectorAll('.genre.active').forEach(button => {
+            button.classList.remove('active')
+            button.style.setProperty("background-color", seccolour)
+        })
+        filterlist()
+    })
+}
+
+async function filterlist() {
+    let andor = document.querySelector('.andor').innerText
+    let activegenres = document.querySelectorAll('.genre.active')
+    let buttonTexts = Array.from(activegenres).map(button => button.innerText);
+    let tr, td, txtValue;
+    tr = table.getElementsByTagName("tr");
+    Array.from(tr).forEach(entry => {
+        td = entry.querySelector(".trgenres")//getElementsByTagName("td")[1];
+        if (td) {
+            txtValue = entry.textContent || entry.innerText;
+            if (andor == 'And') {
+                if (buttonTexts.every(substring => txtValue.includes(substring))) {
+                    entry.style.display = "";
+                } else {
+                    entry.style.display = "none";
+                }
+            }
+            if (andor == 'Or') {
+                if (buttonTexts.some(substring => txtValue.includes(substring)) || buttonTexts.length == 0) {
+                    entry.style.display = "";
+                } else {
+                    entry.style.display = "none";
+                }
+            }
+        }
+    })
+}
+
+async function genrebuttons() {
+    document.querySelectorAll('.genre').forEach(button => {
+        button.addEventListener('click', async function() {
+            button.classList.toggle('active')
+            if (button.classList.contains('active')) {
+                button.style.setProperty("background-color", primcolour)
+            } else {
+                button.style.setProperty("background-color", seccolour)
+            }
+            //do filtering function
+            filterlist()
+        })
+    })
+}
+
+async function andorbutton() {
+    document.querySelector('.andor').addEventListener('click', async function() {
+        if (this.innerText == "And") {
+            this.innerText = "Or";
+        } else {
+            this.innerText = "And";
+        }
+        filterlist()
+        //do filtering
     })
 }
 
@@ -194,8 +264,10 @@ async function fillpage() {
                                 coverImage {
                                     medium
                                 }
+                                description
                                 id
                                 episodes
+                                genres
                                 title {
                                     romaji
                                 }
@@ -207,6 +279,7 @@ async function fillpage() {
                                     score,
                                     status,
                                     progress,
+                                    notes,
                                     updatedAt,
                                     createdAt,
                                     startedAt {
@@ -447,13 +520,22 @@ async function datahandler(filteredandsortedentries) {
     filteredandsortedentries.forEach(media => {
         let myitem = document.createElement("tr");
         myitem.className = "list_item";
+        myitem.style.gridTemplateColumns = '15% auto 15%'
+        //myitem.style.setProperty('grid-template', '15% auto 15%');
         myitem.dataset.id = media['media']['id'];
         
-        let tablezero = document.createElement("td");
+        let tablezero = document.createElement("div");
         let imagetable = document.createElement("img");
         imagetable.src = media['media']['coverImage']['medium'];
         imagetable.loading = "lazy"
+
+        let genresinimg = document.createElement("div")
+        genresinimg.style.display = "none"
+        genresinimg.classList.add("trgenres")
+        genresinimg.textContent = `${media['media']['genres']}`.split(',').join(', ');
+        
         tablezero.appendChild(imagetable)
+        tablezero.appendChild(genresinimg)
 
         let tableelone = document.createElement("td");
         tableelone.className = "clickable-item"
@@ -532,76 +614,46 @@ async function searching() {
 }
 
 
-async function clickables(element) {
-    let query = `
-    query ($id: Int) { # Define which variables will be used in the query (id)
-        Media (id: $id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
-            id,
-            description (asHtml: false),
-            coverImage {
-                medium
-            }
-            title {
-                romaji
-            },
-            mediaListEntry {
-                status,
-                notes,
-                progress
-            },
-            genres
+async function findObjectByIdWithDay(data, targetId) {
+    let found
+    for (const objects of data) {
+        if (objects.media.id == targetId) {
+            found = objects
+            break
         }
     }
-    `
-    let variables = {
-        id: parseInt(element.parentNode.dataset.id)
-    }
-
-    let options = {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query,
-            variables: variables
-        })
-    };
-
-    fetch(url, options).then(handleResponse)
-                       .then(createmodal)
-                       .then(adddropdown)
-                       .catch(handleError);
-    
+    return found ? found : null ;
 }
 
-async function createmodal(data) {
+
+async function clickables(element) {
+    let stored_data = JSON.parse(localStorage[`anime_${document.querySelector('.pill button.active').textContent.toLowerCase()}`])
+    clicked = await findObjectByIdWithDay(stored_data, parseInt(element.parentNode.dataset.id))
     let modalimg = document.getElementsByClassName("image-container")[0];
     let theimg = document.createElement("img");
-    theimg.src = data['data']['Media']['coverImage']['medium'];
+    theimg.src = clicked['media']['coverImage']['medium'];
     theimg.loading = "lazy";
     theimg.style.float = "left";
     theimg.style.paddingRight = "16px";
     theimg.style.height = "auto";
     modalimg.replaceChildren(theimg)
     let modaltitle = document.getElementsByClassName("title-container")[0];
-    modaltitle.textContent = `${data['data']['Media']['title']['romaji']}`;
+    modaltitle.textContent = `${clicked['media']['title']['romaji']}`;
     let modalgenres = document.getElementsByClassName("genres")[0];
-    modalgenres.textContent = `${data['data']['Media']['genres']}`.split(',').join(', ');
+    modalgenres.textContent = `${clicked['media']['genres']}`.split(',').join(', ');
     let modalbutton = document.getElementsByClassName("dropdown")[0];
-    modalbutton.dataset.aniid = data['data']['Media']['id'];
-    modal.querySelector('.dropbtn').textContent =(data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['status'] : "ADD")
+    modalbutton.dataset.aniid = clicked['id'];
+    modal.querySelector('.dropbtn').textContent =(clicked['media']['mediaListEntry'] ? clicked['media']['mediaListEntry']['status'] : "ADD")
     let notesform = document.querySelectorAll('#notesform .formtext')
-    notesform[0].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['notes'] : "")
-    notesform[1].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['progress']: 0)
+    notesform[0].value = (clicked['media']['mediaListEntry'] ? clicked['media']['mediaListEntry']['notes'] : "")
+    notesform[1].value = (clicked['media']['mediaListEntry'] ? clicked['media']['mediaListEntry']['progress']: 0)
     let savebutton = document.getElementById('formbutton')
     savebutton.onclick = async function() {updatenotes(this)}
     let modal_body = document.getElementsByClassName("modal-body")[0];
-    modal_body.children[0].innerHTML = `<h3>Description</h3><p>${data['data']['Media']['description']}</p>`;
+    modal_body.children[0].innerHTML = `<h3>Description</h3><p>${clicked['media']['description']}</p>`;
     modal.style.display = 'block';
 }
+
 
 async function updatenotes(element) {
     let stat = document.getElementsByClassName("dropbtn")[0].textContent
@@ -731,6 +783,12 @@ window.ontouchstart = async function(event) {
             dropdowns.classList.remove('show')
         }
     }
+    if (!event.target.matches('.filter-content button') && !event.target.matches('.filterbtn')) {
+        let dropdowns = document.getElementsByClassName("filter-content")[0];
+        if (dropdowns.classList.contains('show')) {
+            dropdowns.classList.remove('show')
+        }
+    }
 }
 
 async function onpullrefresh() {
@@ -759,12 +817,14 @@ window.addEventListener('scroll', function() {
     let scrollTop = window.scrollY || document.documentElement.scrollTop;
     if (scrollTop > lastScrollTop) {
         // Scrolling down
-        navbarclick.style.bottom = '-60px'; // Adjust based on header height
-        document.getElementsByClassName("dropup")[0].style.bottom = '-100px'
+        navbarclick.style.bottom = '-2000px'; // Adjust based on header height
+        document.getElementsByClassName("dropup")[0].style.bottom = '-2000px'
+        document.querySelector('.filter').style.bottom = '-2000px'
     } else {
         // Scrolling up
         navbarclick.style.bottom = '45px';
         document.getElementsByClassName("dropup")[0].style.bottom = '85px'
+        document.querySelector('.filter').style.bottom = '127px'
     }
     lastScrollTop = scrollTop;
 });

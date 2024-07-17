@@ -15,24 +15,55 @@
     <div class="container content" id="content">
       <table id="current" class="active" data-sort="Next release asc"></table>
     </div>
-    <div class="pill">
-        <button href="javascript:void(0)" class="secondary" style="width: 12.5%;">Mon</button>
-        <button href="javascript:void(0)" class="secondary" style="width: 12.5%;">Tue</button>
-        <button href="javascript:void(0)" class="secondary" style="width: 12.5%;">Wed</button>
-        <button href="javascript:void(0)" class="secondary" style="width: 12.5%;">Thu</button>
-        <button href="javascript:void(0)" class="secondary" style="width: 12.5%;">Fri</button>
-        <button href="javascript:void(0)" class="secondary" style="width: 12.5%;">Sat</button>
-        <button href="javascript:void(0)" class="secondary" style="width: 12.5%;">Sun</button>
-        <button href="javascript:void(0)" class="secondary" style="width: 12.5%;">???</button>
+    <div class="pill" style="grid-Template-Columns: repeat(8, 1fr);  column-gap: 1%">
+        <button href="javascript:void(0)" class="secondary">Mon</button>
+        <button href="javascript:void(0)" class="secondary">Tue</button>
+        <button href="javascript:void(0)" class="secondary">Wed</button>
+        <button href="javascript:void(0)" class="secondary">Thu</button>
+        <button href="javascript:void(0)" class="secondary">Fri</button>
+        <button href="javascript:void(0)" class="secondary">Sat</button>
+        <button href="javascript:void(0)" class="secondary">Sun</button>
+        <button href="javascript:void(0)" class="secondary">NA</button>
     </div>
-    <div class="navbar primary">
-        <a href="index.html" style="width: 25%;"><img border="0" src="img/list.svg"></a>
-        <a href="javascript:void(0)" style="width: 25%;"><img border="0" src="img/calendat.svg"></a>
-        <a href='search.html' style="width: 25%;"><img border="0"  src="img/search.svg"></a>
-        <a href='login.html' style="width: 25%"><img border="0" src="img/settings.svg"></a>
+    <div class="navbar primary" style="grid-Template-Columns: repeat(4, 1fr);">
+      <a href="index.html"><img border="0" src="img/list.svg"></a>
+      <a href="javascript:void(0)"><img border="0" src="img/calendat.svg"></a>
+      <a href='search.html'><img border="0"  src="img/search.svg"></a>
+      <a href='login.html'><img border="0" src="img/settings.svg"></a>
+    </div>
+    <div class="filter">
+      <button class="filterbtn secondary">Filter</button>
+      <div class="filter-content" style="grid-Template-Columns: repeat(4, 1fr); direction: rtl;  gap: 1%">
+        <button href="javascript:void(0)" class="secondary genre">Drama</button>
+        <button href="javascript:void(0)" class="secondary genre">Comedy</button>
+        <button href="javascript:void(0)" class="secondary genre">Adventure</button>
+        <button href="javascript:void(0)" class="secondary genre">Action</button>
+
+        <button href="javascript:void(0)" class="secondary genre">Horror</button>
+        <button href="javascript:void(0)" class="secondary genre">Hentai</button>
+        <button href="javascript:void(0)" class="secondary genre">Fantasy</button>
+        <button href="javascript:void(0)" class="secondary genre">Ecchi</button>
+        
+        <button href="javascript:void(0)" class="secondary genre">Mystery</button>
+        <button href="javascript:void(0)" class="secondary genre">Music</button>
+        <button href="javascript:void(0)" class="secondary genre">Mecha</button>
+        <button href="javascript:void(0)" class="secondary genre">Mahou Shoujo</button>
+        
+        <button href="javascript:void(0)" class="secondary genre">Slice of Life</button>
+        <button href="javascript:void(0)" class="secondary genre">Sci-Fi</button>
+        <button href="javascript:void(0)" class="secondary genre">Romance</button>
+        <button href="javascript:void(0)" class="secondary genre">Psychological</button>
+        
+        <button href="javascript:void(0)" class="primary andor">And</button>
+        <button href="javascript:void(0)" class="secondary genre">Thriller</button>
+        <button href="javascript:void(0)" class="secondary genre">Supernatural</button>
+        <button href="javascript:void(0)" class="secondary genre">Sports</button>
+        
+        <button href="javascript:void(0)" class="primary reset">Reset</button>
+      </div>
     </div>
     <div class="dropup">
-        <button class="dropupbtn primary">Season</button>
+        <button class="dropupbtn secondary">Season</button>
         <div class="dropup-content">
           <a href="javascript:void(0)">WINTER</a>
           <a href="javascript:void(0)">SPRING</a>

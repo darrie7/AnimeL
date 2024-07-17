@@ -44,6 +44,7 @@ async function main() {
         pagefill(searchestring)
     })
     toggledrop(document.getElementsByClassName("dropbtn")[0])
+    adddropdown()
 }
 main()
 
@@ -61,6 +62,7 @@ async function pagefill(searchstring) {
                 }
                 media (search: $search, type: ANIME) {
                     description,
+                    genres,
                     episodes,
                     title {
                         romaji
@@ -133,19 +135,20 @@ async function handleData(data){
             let myitem = document.createElement("tr");
             myitem.className = "list_item";
             myitem.dataset.id = entry['id']
-
-            let tablezero = document.createElement("td");
-            let imagetable = document.createElement("img");
-            imagetable.src = entry['coverImage']['medium'];
-            imagetable.loading = "lazy"
-            tablezero.appendChild(imagetable)
-
-
-            let tableelone = document.createElement("td");
-            tableelone.className = "clickable-item"
-            tableelone.addEventListener('click', async function() {
+            myitem.addEventListener('click', async function() {
                 clickables(this)
             })
+
+            let tablezero = document.createElement("div");
+            let imagetable = document.createElement("img");
+            imagetable.src = entry['coverImage']['medium'];
+            imagetable.loading = "lazy";
+
+            tablezero.appendChild(imagetable)
+
+            let tableelone = document.createElement("div");
+            tableelone.className = "clickable-item"
+
 
             //title
             let myitemtitle = document.createElement("p")
@@ -156,9 +159,6 @@ async function handleData(data){
             let myitemsubtitle = document.createElement("p")
             myitemsubtitle.className = "item_subtitle";
             myitemsubtitle.innerHTML = entry['description']
-            if (myitemsubtitle.textContent != myitemsubtitle.textContent.substring(0, 200)) {
-                myitemsubtitle.textContent = `${myitemsubtitle.textContent.substring(0, 200)}...`
-            }
 
             tableelone.appendChild(myitemtitle)
             tableelone.appendChild(myitemsubtitle)
@@ -171,77 +171,46 @@ async function handleData(data){
     localStorage.setItem('searchitems', JSON.stringify(searchitems))
 }
 
+async function findObjectByIdWithDay(data, targetId) {
+    let found
+    for (const objects of data) {
+        if (objects.id == targetId) {
+            found = objects
+            break
+        }
+    }
+    return found ? found : null ;
+}
 
 
 async function clickables(element) {
-    let query = `
-    query ($id: Int) { # Define which variables will be used in the query (id)
-        Media (id: $id, type: ANIME) { # Insert our variables into the query arguments (id) (type: ANIME is hard-coded in the query)
-            id,
-            description (asHtml: true),
-            coverImage {
-                medium
-            }
-            title {
-                romaji
-            },
-            mediaListEntry {
-                status,
-                notes,
-                progress
-            },
-            genres
-        }
-    }
-    `
-    let variables = {
-        id: parseInt(element.parentNode.dataset.id)
-    }
-    const url = 'https://graphql.anilist.co'
-    let  options = {
-        method: 'POST',
-        headers: {
-            'Authorization': 'Bearer ' + token,
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-        },
-        body: JSON.stringify({
-            query: query,
-            variables: variables
-        })
-    };
-    await fetch(url, options).then(handleResponse)
-                       .then(createmodal)
-                       .then(adddropdown)
-                       .catch(handleError);
-    
-}
-
-async function createmodal(data) {
+    let stored_data = JSON.parse(localStorage['searchitems'])
+    clicked = await findObjectByIdWithDay(stored_data, parseInt(element.dataset.id))
     let modalimg = document.getElementsByClassName("image-container")[0];
     let theimg = document.createElement("img");
-    theimg.src = data['data']['Media']['coverImage']['medium'];
+    theimg.src = clicked['coverImage']['medium'];
     theimg.loading = "lazy";
     theimg.style.float = "left";
     theimg.style.paddingRight = "16px";
     theimg.style.height = "auto";
     modalimg.replaceChildren(theimg)
     let modaltitle = document.getElementsByClassName("title-container")[0];
-    modaltitle.textContent = `${data['data']['Media']['title']['romaji']}`;
+    modaltitle.textContent = `${clicked['title']['romaji']}`;
     let modalgenres = document.getElementsByClassName("genres")[0];
-    modalgenres.textContent = `${data['data']['Media']['genres']}`.split(',').join(', ');
+    modalgenres.textContent = `${clicked['genres']}`.split(',').join(', ');
     let modalbutton = document.getElementsByClassName("dropdown")[0];
-    modalbutton.dataset.aniid = data['data']['Media']['id'];
-    modal.querySelector('.dropbtn').textContent =(data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['status'] : "ADD")
+    modalbutton.dataset.aniid = clicked['id'];
+    modal.querySelector('.dropbtn').textContent =(clicked['mediaListEntry'] ? clicked['mediaListEntry']['status'] : "ADD")
     let notesform = document.querySelectorAll('#notesform .formtext')
-    notesform[0].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['notes'] : "")
-    notesform[1].value = (data['data']['Media']['mediaListEntry'] ? data['data']['Media']['mediaListEntry']['progress']: 0)
+    notesform[0].value = (clicked['mediaListEntry'] ? clicked['mediaListEntry']['notes'] : "")
+    notesform[1].value = (clicked['mediaListEntry'] ? clicked['mediaListEntry']['progress']: 0)
     let savebutton = document.getElementById('formbutton')
     savebutton.onclick = async function() {updatenotes(this)}
     let modal_body = document.getElementsByClassName("modal-body")[0];
-    modal_body.children[0].innerHTML = `<h3>Description</h3><p>${data['data']['Media']['description']}</p>`;
+    modal_body.children[0].innerHTML = `<h3>Description</h3><p>${clicked['description']}</p>`;
     modal.style.display = 'block';
 }
+
 
 async function updatenotes(element) {
     let tableentry = document.querySelector((`[data-id='${element.parentNode.dataset.aniid}']`))

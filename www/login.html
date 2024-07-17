@@ -14,32 +14,32 @@
             <button id="urlbutton" class="secondary" type="button">Login with AniList</button>
         </div>
         <table class="active">
-            <tr>
-                <td> Primary colour </td>
-                <td>
+            <tr style="grid-Template-Columns: repeat(2, 1fr);">
+                <td style="font-weight: bold;"> Primary colour </td>
+                <td style="justify-self: center;">
                     <input type="color" id="primarycolourPicker">
                 </td>
             </tr>
-            <tr>
-                <td> Secondary colour </td>
-                <td>
+            <tr style="grid-Template-Columns: repeat(2, 1fr);">
+                <td style="font-weight: bold;"> Secondary colour </td>
+                <td style="justify-self: center;">
                     <input type="color" id="secondarycolourPicker">
                 </td>
             </tr>
-            <tr>
-                <td> Third colour </td>
-                <td>
+            <tr style="grid-Template-Columns: repeat(2, 1fr);">
+                <td style="font-weight: bold;"> Third colour </td>
+                <td style="justify-self: center;">
                     <input type="color" id="tripondarycolourPicker">
                 </td>
             </tr>
         </table>
     </div>
-    <div class="navbar primary">
-        <a href="index.html" style="width: 25%;"><img border="0" src="img/list.svg"></a>
-        <a href="calenderpage.html" style="width: 25%;"><img border="0" src="img/calendat.svg"></a>
-        <a href='search.html' style="width: 25%;"><img border="0"  src="img/search.svg"></a>
-        <a href="javascript:void(0)" style="width: 25%"><img border="0" src="img/settings.svg"></a>
-    </div>
+    <div class="navbar primary" style="grid-Template-Columns: repeat(4, 1fr);">
+        <a href="index.html"><img border="0" src="img/list.svg"></a>
+        <a href="calenderpage.html"><img border="0" src="img/calendat.svg"></a>
+        <a href='search.html'><img border="0"  src="img/search.svg"></a>
+        <a href="javascript:void(0)"><img border="0" src="img/settings.svg"></a>
+      </div>
     <div class="toast"></div>
     <script id ="myscript" src="js/login.js" defer></script>
     <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
